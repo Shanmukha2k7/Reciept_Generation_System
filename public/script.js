@@ -180,6 +180,30 @@
     splashEmail: document.getElementById('splash-email'),
     splashPassword: document.getElementById('splash-password'),
     btnSplashSignin: document.getElementById('btn-splash-signin'),
+    splashTabSwitcher: document.getElementById('splash-tab-switcher'),
+    btnSplashForgotPassword: document.getElementById('btn-splash-forgot-password'),
+    splashPanelForgot: document.getElementById('splash-panel-forgot'),
+    btnForgotBackToSignin: document.getElementById('btn-forgot-back-to-signin'),
+
+    forgotStep1: document.getElementById('forgot-step-1'),
+    forgotAdminEmail: document.getElementById('forgot-admin-email'),
+    forgotCaptchaCanvas: document.getElementById('forgot-captcha-canvas'),
+    btnRefreshForgotCaptcha: document.getElementById('btn-refresh-forgot-captcha'),
+    forgotCaptchaInput: document.getElementById('forgot-captcha-input'),
+    btnSendForgotOtp: document.getElementById('btn-send-forgot-otp'),
+
+    forgotStep2: document.getElementById('forgot-step-2'),
+    forgotTargetEmailDisplay: document.getElementById('forgot-target-email-display'),
+    forgotSimulatedOtpCode: document.getElementById('forgot-simulated-otp-code'),
+    forgotOtpInput: document.getElementById('forgot-otp-input'),
+    forgotOtpCountdown: document.getElementById('forgot-otp-countdown'),
+    btnResendForgotOtp: document.getElementById('btn-resend-forgot-otp'),
+    btnVerifyForgotOtp: document.getElementById('btn-verify-forgot-otp'),
+
+    forgotStep3: document.getElementById('forgot-step-3'),
+    forgotNewPassword: document.getElementById('forgot-new-password'),
+    forgotConfirmPassword: document.getElementById('forgot-confirm-password'),
+    btnSubmitNewPassword: document.getElementById('btn-submit-new-password'),
 
     // Admin Self-Registration Fields
     regAdminName: document.getElementById('reg-admin-name'),
@@ -558,6 +582,272 @@
   };
 
   // ============================================================================
+  // 6b. ADMIN PASSWORD RECOVERY SERVICE (CAPTCHA + OTP + EMAIL VERIFICATION)
+  // ============================================================================
+  const ForgotService = {
+    currentCaptchaCode: '',
+    state: {
+      email: '',
+      otp: '',
+      expiresAt: 0,
+      verified: false
+    },
+    countdownTimer: null,
+    resendTimer: null,
+
+    openRecovery() {
+      if (DOM.splashTabSwitcher) DOM.splashTabSwitcher.classList.add('hidden');
+      if (DOM.splashPanelSignin) DOM.splashPanelSignin.classList.add('hidden');
+      if (DOM.splashPanelRegister) DOM.splashPanelRegister.classList.add('hidden');
+      if (DOM.splashPanelForgot) DOM.splashPanelForgot.classList.remove('hidden');
+
+      // Pre-fill email if entered on sign in screen
+      if (DOM.splashEmail && DOM.splashEmail.value && DOM.splashEmail.value.includes('@')) {
+        DOM.forgotAdminEmail.value = DOM.splashEmail.value.trim();
+      }
+
+      this.goToStep(1);
+      this.refreshCaptcha();
+    },
+
+    closeRecovery() {
+      this.clearTimers();
+      if (DOM.splashPanelForgot) DOM.splashPanelForgot.classList.add('hidden');
+      if (DOM.splashTabSwitcher) DOM.splashTabSwitcher.classList.remove('hidden');
+      if (DOM.splashPanelSignin) DOM.splashPanelSignin.classList.remove('hidden');
+    },
+
+    refreshCaptcha() {
+      if (DOM.forgotCaptchaCanvas) {
+        this.currentCaptchaCode = CaptchaService.generate(DOM.forgotCaptchaCanvas);
+      }
+      if (DOM.forgotCaptchaInput) DOM.forgotCaptchaInput.value = '';
+    },
+
+    goToStep(step) {
+      if (!DOM.forgotStep1 || !DOM.forgotStep2 || !DOM.forgotStep3) return;
+      DOM.forgotStep1.classList.add('hidden');
+      DOM.forgotStep2.classList.add('hidden');
+      DOM.forgotStep3.classList.add('hidden');
+
+      if (step === 1) {
+        DOM.forgotStep1.classList.remove('hidden');
+        if (DOM.forgotAdminEmail) DOM.forgotAdminEmail.focus();
+      } else if (step === 2) {
+        DOM.forgotStep2.classList.remove('hidden');
+        if (DOM.forgotOtpInput) DOM.forgotOtpInput.focus();
+      } else if (step === 3) {
+        DOM.forgotStep3.classList.remove('hidden');
+        if (DOM.forgotNewPassword) DOM.forgotNewPassword.focus();
+      }
+    },
+
+    sendOtp() {
+      const email = (DOM.forgotAdminEmail.value || '').trim().toLowerCase();
+      const captchaInput = (DOM.forgotCaptchaInput.value || '').trim();
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        Toast.show('Please enter a valid Admin email address', 'warning');
+        return false;
+      }
+
+      const users = AuthService.getUsers();
+      const user = users.find(u => u.email && u.email.toLowerCase() === email);
+
+      if (!user) {
+        Toast.show(`No account found matching email "${email}"!`, 'error');
+        return false;
+      }
+
+      if (user.role !== 'admin') {
+        Toast.show('Password self-recovery is restricted to Admin accounts. Cashiers must contact their Store Admin.', 'warning');
+        return false;
+      }
+
+      if (!captchaInput) {
+        Toast.show('Please enter the captcha verification code', 'warning');
+        return false;
+      }
+
+      if (captchaInput.toUpperCase() !== this.currentCaptchaCode.toUpperCase()) {
+        Toast.show('Invalid captcha verification code! Please try again.', 'error');
+        this.refreshCaptcha();
+        return false;
+      }
+
+      // Generate 6-digit OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      this.state = {
+        email: user.email,
+        otp: otp,
+        expiresAt: Date.now() + 5 * 60 * 1000,
+        verified: false
+      };
+
+      DOM.forgotTargetEmailDisplay.textContent = user.email;
+      DOM.forgotSimulatedOtpCode.textContent = otp;
+      DOM.forgotOtpInput.value = '';
+
+      this.goToStep(2);
+      this.startTimers();
+
+      Toast.show(`Security OTP dispatched to ${user.email}! (Demo OTP: ${otp})`, 'success');
+      if (window.confetti) {
+        confetti({ particleCount: 40, spread: 50, origin: { y: 0.6 } });
+      }
+      return true;
+    },
+
+    resendOtp() {
+      if (!this.state.email) return;
+
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      this.state.otp = otp;
+      this.state.expiresAt = Date.now() + 5 * 60 * 1000;
+      DOM.forgotSimulatedOtpCode.textContent = otp;
+
+      this.startTimers();
+      Toast.show(`New OTP dispatched to ${this.state.email}! (Demo OTP: ${otp})`, 'info');
+    },
+
+    verifyOtp() {
+      if (!this.state.email || !this.state.otp) {
+        Toast.show('Session expired. Please request a new OTP.', 'warning');
+        this.goToStep(1);
+        return false;
+      }
+
+      if (Date.now() > this.state.expiresAt) {
+        Toast.show('OTP verification code has expired! Please request a new OTP.', 'error');
+        return false;
+      }
+
+      const enteredOtp = (DOM.forgotOtpInput.value || '').trim();
+      if (!enteredOtp || enteredOtp.length !== 6) {
+        Toast.show('Please enter the full 6-digit OTP code', 'warning');
+        return false;
+      }
+
+      if (enteredOtp !== this.state.otp) {
+        Toast.show('Incorrect OTP code! Please verify the 6 digits and try again.', 'error');
+        return false;
+      }
+
+      this.state.verified = true;
+      this.clearTimers();
+      this.goToStep(3);
+
+      Toast.show('Email identity verified! Please create your new Admin password.', 'success');
+      if (window.confetti) {
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+      }
+      return true;
+    },
+
+    submitNewPassword() {
+      if (!this.state.verified || !this.state.email) {
+        Toast.show('Identity verification required. Please restart recovery.', 'error');
+        this.goToStep(1);
+        return false;
+      }
+
+      const newPass = DOM.forgotNewPassword.value || '';
+      const confirmPass = DOM.forgotConfirmPassword.value || '';
+
+      if (!newPass || newPass.length < 6) {
+        Toast.show('New password must be at least 6 characters long', 'warning');
+        return false;
+      }
+
+      if (newPass !== confirmPass) {
+        Toast.show('Passwords do not match! Please re-type identical passwords.', 'error');
+        return false;
+      }
+
+      const users = AuthService.getUsers();
+      const user = users.find(u => u.email && u.email.toLowerCase() === this.state.email.toLowerCase());
+
+      if (!user) {
+        Toast.show('Admin account not found in database', 'error');
+        return false;
+      }
+
+      // Update password hash
+      user.passwordHash = sha256(newPass);
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+
+      Toast.show(`Password updated successfully! Welcome back, ${user.name}!`, 'success');
+      if (window.confetti) {
+        confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+      }
+
+      // Return to sign in
+      this.closeRecovery();
+      DOM.splashEmail.value = user.workerId || user.email;
+      DOM.splashPassword.value = '';
+      DOM.splashPassword.focus();
+
+      // Clear recovery state
+      this.state = { email: '', otp: '', expiresAt: 0, verified: false };
+      return true;
+    },
+
+    startTimers() {
+      this.clearTimers();
+
+      // 1. Expiry Countdown (5 minutes)
+      const updateCountdown = () => {
+        const remainingMs = Math.max(0, this.state.expiresAt - Date.now());
+        const totalSec = Math.floor(remainingMs / 1000);
+        const mm = String(Math.floor(totalSec / 60)).padStart(2, '0');
+        const ss = String(totalSec % 60).padStart(2, '0');
+        if (DOM.forgotOtpCountdown) DOM.forgotOtpCountdown.textContent = `${mm}:${ss}`;
+
+        if (totalSec <= 0) {
+          clearInterval(this.countdownTimer);
+          if (DOM.forgotOtpCountdown) DOM.forgotOtpCountdown.textContent = 'EXPIRED';
+        }
+      };
+
+      updateCountdown();
+      this.countdownTimer = setInterval(updateCountdown, 1000);
+
+      // 2. Resend Cooldown (30 seconds)
+      let resendSec = 30;
+      if (DOM.btnResendForgotOtp) {
+        DOM.btnResendForgotOtp.disabled = true;
+        DOM.btnResendForgotOtp.textContent = `Resend in ${resendSec}s`;
+      }
+
+      this.resendTimer = setInterval(() => {
+        resendSec--;
+        if (resendSec <= 0) {
+          clearInterval(this.resendTimer);
+          if (DOM.btnResendForgotOtp) {
+            DOM.btnResendForgotOtp.disabled = false;
+            DOM.btnResendForgotOtp.textContent = 'Resend OTP';
+          }
+        } else {
+          if (DOM.btnResendForgotOtp) {
+            DOM.btnResendForgotOtp.textContent = `Resend in ${resendSec}s`;
+          }
+        }
+      }, 1000);
+    },
+
+    clearTimers() {
+      if (this.countdownTimer) {
+        clearInterval(this.countdownTimer);
+        this.countdownTimer = null;
+      }
+      if (this.resendTimer) {
+        clearInterval(this.resendTimer);
+        this.resendTimer = null;
+      }
+    }
+  };
+
+  // ============================================================================
   // 7. USER AUTHENTICATION & STRICT ROLE ENFORCEMENT (Multi-Admin / Multi-Store)
   // ============================================================================
   const AuthService = {
@@ -633,11 +923,14 @@
       AppState.currentUser = null;
       if (DOM.splashEmail) DOM.splashEmail.value = '';
       if (DOM.splashPassword) DOM.splashPassword.value = '';
+      if (DOM.splashTabSwitcher) DOM.splashTabSwitcher.classList.remove('hidden');
+      if (DOM.splashPanelForgot) DOM.splashPanelForgot.classList.add('hidden');
       if (DOM.splashPanelSignin) DOM.splashPanelSignin.classList.remove('hidden');
       if (DOM.splashPanelRegister) DOM.splashPanelRegister.classList.add('hidden');
+      if (typeof ForgotService !== 'undefined') ForgotService.clearTimers();
       if (DOM.btnSplashTabSignin && DOM.btnSplashTabRegister) {
-        DOM.btnSplashTabSignin.className = 'flex-1 py-2.5 px-3 rounded-xl bg-white text-slate-900 shadow-sm transition-all flex items-center justify-center gap-2';
-        DOM.btnSplashTabRegister.className = 'flex-1 py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-2';
+        DOM.btnSplashTabSignin.className = 'flex-1 py-2.5 px-3 rounded-xl bg-white text-slate-900 shadow-sm transition-all flex items-center justify-center gap-2 font-bold';
+        DOM.btnSplashTabRegister.className = 'flex-1 py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-2 font-semibold';
       }
       DOM.splashAuthOverlay.classList.remove('hidden');
       DOM.viewWorker.classList.add('hidden');
@@ -2794,6 +3087,53 @@
         AuthService.login(DOM.splashEmail.value, DOM.splashPassword.value);
       }
     });
+
+    // 1b. Admin Forgot Password & OTP Recovery Listeners
+    if (DOM.btnSplashForgotPassword) {
+      DOM.btnSplashForgotPassword.addEventListener('click', () => ForgotService.openRecovery());
+    }
+
+    if (DOM.btnForgotBackToSignin) {
+      DOM.btnForgotBackToSignin.addEventListener('click', () => ForgotService.closeRecovery());
+    }
+
+    if (DOM.btnRefreshForgotCaptcha) {
+      DOM.btnRefreshForgotCaptcha.addEventListener('click', () => ForgotService.refreshCaptcha());
+    }
+    if (DOM.forgotCaptchaCanvas) {
+      DOM.forgotCaptchaCanvas.addEventListener('click', () => ForgotService.refreshCaptcha());
+    }
+
+    if (DOM.btnSendForgotOtp) {
+      DOM.btnSendForgotOtp.addEventListener('click', () => ForgotService.sendOtp());
+    }
+    if (DOM.forgotCaptchaInput) {
+      DOM.forgotCaptchaInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') ForgotService.sendOtp();
+      });
+    }
+
+    if (DOM.btnVerifyForgotOtp) {
+      DOM.btnVerifyForgotOtp.addEventListener('click', () => ForgotService.verifyOtp());
+    }
+    if (DOM.forgotOtpInput) {
+      DOM.forgotOtpInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') ForgotService.verifyOtp();
+      });
+    }
+
+    if (DOM.btnResendForgotOtp) {
+      DOM.btnResendForgotOtp.addEventListener('click', () => ForgotService.resendOtp());
+    }
+
+    if (DOM.btnSubmitNewPassword) {
+      DOM.btnSubmitNewPassword.addEventListener('click', () => ForgotService.submitNewPassword());
+    }
+    if (DOM.forgotConfirmPassword) {
+      DOM.forgotConfirmPassword.addEventListener('keydown', e => {
+        if (e.key === 'Enter') ForgotService.submitNewPassword();
+      });
+    }
 
     // 2. Logout
     DOM.btnLogout.addEventListener('click', () => AuthService.logout());
