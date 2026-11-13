@@ -171,11 +171,28 @@
   // 4. DOM REFERENCES
   // ============================================================================
   const DOM = {
-    // Splash Authentication
+    // Splash Authentication & Onboarding
     splashAuthOverlay: document.getElementById('splash-auth-overlay'),
+    btnSplashTabSignin: document.getElementById('btn-splash-tab-signin'),
+    btnSplashTabRegister: document.getElementById('btn-splash-tab-register'),
+    splashPanelSignin: document.getElementById('splash-panel-signin'),
+    splashPanelRegister: document.getElementById('splash-panel-register'),
     splashEmail: document.getElementById('splash-email'),
     splashPassword: document.getElementById('splash-password'),
     btnSplashSignin: document.getElementById('btn-splash-signin'),
+
+    // Admin Self-Registration Fields
+    regAdminName: document.getElementById('reg-admin-name'),
+    regAdminId: document.getElementById('reg-admin-id'),
+    btnAutoAdminId: document.getElementById('btn-auto-admin-id'),
+    regAdminEmail: document.getElementById('reg-admin-email'),
+    regAdminPassword: document.getElementById('reg-admin-password'),
+    regStoreName: document.getElementById('reg-store-name'),
+    regStoreAddress: document.getElementById('reg-store-address'),
+    regStoreTax: document.getElementById('reg-store-tax'),
+    regStorePhone: document.getElementById('reg-store-phone'),
+    regStoreUpi: document.getElementById('reg-store-upi'),
+    btnSubmitAdminRegister: document.getElementById('btn-submit-admin-register'),
 
     // Top Header
     headerRoleBadge: document.getElementById('header-role-badge'),
@@ -324,6 +341,7 @@
     adminNavWorkers: document.getElementById('admin-nav-workers'),
     adminNavAnalytics: document.getElementById('admin-nav-analytics'),
     adminNavServer: document.getElementById('admin-nav-server'),
+    adminNavDanger: document.getElementById('admin-nav-danger'),
 
     adminPanelCompany: document.getElementById('admin-panel-company'),
     adminPanelProducts: document.getElementById('admin-panel-products'),
@@ -332,6 +350,16 @@
     adminPanelWorkers: document.getElementById('admin-panel-workers'),
     adminPanelAnalytics: document.getElementById('admin-panel-analytics'),
     adminPanelServer: document.getElementById('admin-panel-server'),
+    adminPanelDanger: document.getElementById('admin-panel-danger'),
+
+    // Admin Danger Zone / Purge Data Controls
+    btnClearStoreSales: document.getElementById('btn-clear-store-sales'),
+    btnFactoryResetStore: document.getElementById('btn-factory-reset-store'),
+    dataConfirmModal: document.getElementById('data-confirm-modal'),
+    dataConfirmTitle: document.getElementById('data-confirm-title'),
+    dataConfirmMessage: document.getElementById('data-confirm-message'),
+    btnConfirmDataWipe: document.getElementById('btn-confirm-data-wipe'),
+    btnCancelDataWipe: document.getElementById('btn-cancel-data-wipe'),
 
     // Admin Company Profile Settings
     adminCompanyName: document.getElementById('admin-company-name'),
@@ -530,7 +558,7 @@
   };
 
   // ============================================================================
-  // 7. USER AUTHENTICATION & STRICT ROLE ENFORCEMENT
+  // 7. USER AUTHENTICATION & STRICT ROLE ENFORCEMENT (Multi-Admin / Multi-Store)
   // ============================================================================
   const AuthService = {
     initUsers() {
@@ -539,13 +567,17 @@
         users = [
           {
             workerId: 'ADM-001',
+            adminId: 'ADM-001',
             name: 'System Administrator',
             email: 'admin@billbuddy.com',
             role: 'admin',
-            passwordHash: sha256('Admin@123')
+            passwordHash: sha256('Admin@123'),
+            store: JSON.parse(JSON.stringify(AppState.store)),
+            qrConfig: JSON.parse(JSON.stringify(AppState.qrConfig))
           },
           {
             workerId: 'WRK-101',
+            adminId: 'ADM-001',
             name: 'Rahul Sharma',
             email: 'rahul@billbuddy.com',
             role: 'worker',
@@ -553,6 +585,7 @@
           },
           {
             workerId: 'WRK-102',
+            adminId: 'ADM-001',
             name: 'Priya Patel',
             email: 'priya@billbuddy.com',
             role: 'worker',
@@ -561,11 +594,23 @@
         ];
         localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
       } else {
-        // Ensure legacy records have Worker IDs and modern BillBuddy domain
+        // Ensure legacy records have Worker IDs, adminId links, and modern domain
         let modified = false;
         users = users.map((u, i) => {
           if (!u.workerId) {
             u.workerId = u.role === 'admin' ? 'ADM-001' : `WRK-${101 + i}`;
+            modified = true;
+          }
+          if (!u.adminId) {
+            u.adminId = u.role === 'admin' ? u.workerId : 'ADM-001';
+            modified = true;
+          }
+          if (u.role === 'admin' && !u.store) {
+            u.store = JSON.parse(JSON.stringify(AppState.store));
+            modified = true;
+          }
+          if (u.role === 'admin' && !u.qrConfig) {
+            u.qrConfig = JSON.parse(JSON.stringify(AppState.qrConfig));
             modified = true;
           }
           if (u.email && u.email.includes('@smartreceipt.com')) {
@@ -588,6 +633,12 @@
       AppState.currentUser = null;
       if (DOM.splashEmail) DOM.splashEmail.value = '';
       if (DOM.splashPassword) DOM.splashPassword.value = '';
+      if (DOM.splashPanelSignin) DOM.splashPanelSignin.classList.remove('hidden');
+      if (DOM.splashPanelRegister) DOM.splashPanelRegister.classList.add('hidden');
+      if (DOM.btnSplashTabSignin && DOM.btnSplashTabRegister) {
+        DOM.btnSplashTabSignin.className = 'flex-1 py-2.5 px-3 rounded-xl bg-white text-slate-900 shadow-sm transition-all flex items-center justify-center gap-2';
+        DOM.btnSplashTabRegister.className = 'flex-1 py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-2';
+      }
       DOM.splashAuthOverlay.classList.remove('hidden');
       DOM.viewWorker.classList.add('hidden');
       DOM.viewAdmin.classList.add('hidden');
@@ -617,7 +668,7 @@
       }
 
       const users = this.getUsers();
-      // Supports login via EITHER Worker ID (e.g. WRK-101) OR Email address (billbuddy.com or legacy)
+      // Supports login via EITHER Worker ID (e.g. WRK-101, ADM-001) OR Email address
       const user = users.find(u => 
         (u.workerId && u.workerId.toUpperCase() === rawId.toUpperCase()) ||
         (u.email && (
@@ -628,7 +679,7 @@
       );
 
       if (!user) {
-        Toast.show('No staff account found with this Worker ID / Email.', 'error');
+        Toast.show('No staff or admin account found with this ID / Email.', 'error');
         return false;
       }
 
@@ -637,19 +688,152 @@
         return false;
       }
 
-      // Session established
+      // Session established with adminId linking
       AppState.currentUser = {
-        workerId: user.workerId || 'WRK-100',
+        workerId: user.workerId || (user.role === 'admin' ? 'ADM-001' : 'WRK-100'),
+        adminId: user.role === 'admin' ? (user.adminId || user.workerId) : (user.adminId || 'ADM-001'),
         name: user.name,
         email: user.email,
         role: user.role
       };
       localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(AppState.currentUser));
 
+      // Load store profile and QR code based on user role and admin association
+      if (user.role === 'admin') {
+        if (user.store) AppState.store = JSON.parse(JSON.stringify(user.store));
+        if (user.qrConfig) AppState.qrConfig = JSON.parse(JSON.stringify(user.qrConfig));
+      } else {
+        // Cashier/Worker: Inherit store identity and QR code from their respective Admin
+        const myAdmin = users.find(u => u.role === 'admin' && (u.adminId === user.adminId || u.workerId === user.adminId));
+        if (myAdmin && myAdmin.store) {
+          AppState.store = JSON.parse(JSON.stringify(myAdmin.store));
+        }
+        if (myAdmin && myAdmin.qrConfig) {
+          AppState.qrConfig = JSON.parse(JSON.stringify(myAdmin.qrConfig));
+        }
+      }
+
+      syncStateToForm();
+      ReceiptRenderer.render();
+
       DOM.splashAuthOverlay.classList.add('hidden');
       this.applyUserInterface();
       Toast.show(`Welcome, ${user.name}! (${user.workerId || user.role.toUpperCase()})`, 'success');
       return true;
+    },
+
+    registerAdmin(adminData) {
+      const name = (adminData.name || '').trim();
+      const workerId = (adminData.workerId || '').trim().toUpperCase() || this.getNextAdminId();
+      const email = (adminData.email || '').trim().toLowerCase();
+      const password = adminData.password || '';
+      const storeName = (adminData.storeName || '').trim();
+      const storeAddress = (adminData.storeAddress || '').trim();
+      const storeTax = (adminData.storeTax || '').trim() || 'GSTIN-PENDING';
+      const storePhone = (adminData.storePhone || '').trim();
+      const storeUpi = (adminData.storeUpi || '').trim();
+
+      if (!name || name.length < 2) {
+        Toast.show('Please enter your full name', 'warning');
+        return false;
+      }
+      if (!workerId || workerId.length < 2) {
+        Toast.show('Please enter a valid Admin ID', 'warning');
+        return false;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        Toast.show('Please enter a valid email address', 'warning');
+        return false;
+      }
+      if (!password || password.length < 6) {
+        Toast.show('Password must be at least 6 characters', 'warning');
+        return false;
+      }
+      if (!storeName || storeName.length < 2) {
+        Toast.show('Please enter your Company / Store name', 'warning');
+        return false;
+      }
+      if (!storeAddress || storeAddress.length < 2) {
+        Toast.show('Please enter your store address', 'warning');
+        return false;
+      }
+      if (!storeUpi || !storeUpi.includes('@')) {
+        Toast.show('Please enter a valid UPI VPA (e.g. storename@upi)', 'warning');
+        return false;
+      }
+
+      const users = this.getUsers();
+      if (users.some(u => u.workerId && u.workerId.toUpperCase() === workerId)) {
+        Toast.show(`Admin ID "${workerId}" is already assigned! Please use a unique ID.`, 'error');
+        return false;
+      }
+      if (users.some(u => u.email.toLowerCase() === email)) {
+        Toast.show('An account with this email address already exists', 'error');
+        return false;
+      }
+
+      const newAdmin = {
+        workerId: workerId,
+        adminId: workerId,
+        name: name,
+        email: email,
+        role: 'admin',
+        passwordHash: sha256(password),
+        createdAt: new Date().toISOString(),
+        store: {
+          name: storeName,
+          taxId: storeTax,
+          address: storeAddress,
+          phone: storePhone || '+91 98765 00000',
+          logo: null
+        },
+        qrConfig: {
+          upiId: storeUpi,
+          merchantName: storeName,
+          notes: 'Scan with any UPI App: GPay, PhonePe, Paytm, BHIM',
+          customQrImage: null
+        }
+      };
+
+      users.push(newAdmin);
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+
+      // Auto login as this new Admin
+      AppState.currentUser = {
+        workerId: newAdmin.workerId,
+        adminId: newAdmin.adminId,
+        name: newAdmin.name,
+        email: newAdmin.email,
+        role: newAdmin.role
+      };
+      AppState.store = JSON.parse(JSON.stringify(newAdmin.store));
+      AppState.qrConfig = JSON.parse(JSON.stringify(newAdmin.qrConfig));
+      localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(AppState.currentUser));
+
+      syncStateToForm();
+      ReceiptRenderer.render();
+
+      DOM.splashAuthOverlay.classList.add('hidden');
+      this.applyUserInterface();
+
+      if (window.confetti) {
+        confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+      }
+
+      Toast.show(`Admin account created! Welcome to ${storeName}!`, 'success');
+      return true;
+    },
+
+    getNextAdminId() {
+      const users = this.getUsers();
+      let maxNum = 1;
+      users.forEach(u => {
+        if (u.role === 'admin' && u.workerId && u.workerId.startsWith('ADM-')) {
+          const num = parseInt(u.workerId.replace('ADM-', ''), 10);
+          if (!isNaN(num) && num > maxNum) maxNum = num;
+        }
+      });
+      return `ADM-${String(maxNum + 1).padStart(3, '0')}`;
     },
 
     logout() {
@@ -671,15 +855,16 @@
         DOM.viewWorker.classList.add('hidden');
         DOM.viewAdmin.classList.remove('hidden');
 
-        DOM.headerUserWelcome.textContent = `Administrator: ${user.name}`;
+        DOM.headerUserWelcome.textContent = `Administrator: ${user.name} (${user.workerId})`;
         DOM.headerRoleBadge.textContent = 'Admin Executive Portal';
-        DOM.headerRoleBadge.className = 'px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200';
+        DOM.headerRoleBadge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200';
 
         DOM.adminNavControls.classList.remove('hidden');
         DOM.adminNavControls.classList.add('flex');
         DOM.workerNavControls.classList.add('hidden');
 
-        // Render admin views
+        // Render admin views scoped to this admin's workspace
+        AdminModule.renderCompanySettings();
         AdminModule.renderMonthlyProductAnalytics();
         AdminModule.renderAdminCatalog();
         QrConfigService.renderAdminQrPreview();
@@ -691,9 +876,9 @@
         DOM.viewAdmin.classList.add('hidden');
         DOM.viewWorker.classList.remove('hidden');
 
-        DOM.headerUserWelcome.textContent = `Cashier: ${user.name}`;
+        DOM.headerUserWelcome.textContent = `Cashier: ${user.name} (${user.workerId}) • ${AppState.store.name}`;
         DOM.headerRoleBadge.textContent = 'Worker POS Billing';
-        DOM.headerRoleBadge.className = 'px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-brand-50 text-brand-700 border border-brand-200';
+        DOM.headerRoleBadge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand-50 text-brand-700 border border-brand-200';
 
         DOM.workerNavControls.classList.remove('hidden');
         DOM.workerNavControls.classList.add('flex');
@@ -705,11 +890,12 @@
       }
     },
 
-    // Admin provisions new worker credentials with unique Worker ID
+    // Admin provisions new worker credentials with unique Worker ID - scoped to current admin
     provisionWorker(workerId, name, email, password) {
       const trimmedWorkerId = (workerId || '').trim().toUpperCase() || this.getNextWorkerId();
       const trimmedName = (name || '').trim();
       const trimmedEmail = (email || '').trim().toLowerCase();
+      const currentAdminId = (AppState.currentUser && AppState.currentUser.adminId) ? AppState.currentUser.adminId : 'ADM-001';
 
       if (!trimmedWorkerId || trimmedWorkerId.length < 2) {
         Toast.show('A valid Worker ID is required', 'warning');
@@ -740,6 +926,7 @@
 
       const newWorker = {
         workerId: trimmedWorkerId,
+        adminId: currentAdminId, // Strictly scoped to current Admin
         name: trimmedName,
         email: trimmedEmail,
         role: 'worker',
@@ -932,6 +1119,20 @@
       AppState.qrConfig.notes = notes.trim();
 
       localStorage.setItem(STORAGE_KEYS.QR_CONFIG, JSON.stringify(AppState.qrConfig));
+
+      // Persist to current admin in users database
+      try {
+        const users = AuthService.getUsers();
+        const currentAdminId = (AppState.currentUser && AppState.currentUser.adminId) ? AppState.currentUser.adminId : 'ADM-001';
+        const adminRec = users.find(u => u.workerId === currentAdminId || (u.role === 'admin' && u.adminId === currentAdminId));
+        if (adminRec) {
+          adminRec.qrConfig = JSON.parse(JSON.stringify(AppState.qrConfig));
+          localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+        }
+      } catch (e) {
+        console.error('Error saving QR config to admin user:', e);
+      }
+
       this.renderAdminQrPreview();
       Toast.show('QR Code configuration updated successfully!', 'success');
       return true;
@@ -1003,8 +1204,10 @@
     commitPaymentRecord(receiptSnapshot, paymentDetails) {
       try {
         const db = this.getServerDb();
+        const currentAdminId = receiptSnapshot.adminId || (receiptSnapshot.createdBy && receiptSnapshot.createdBy.adminId) || (AppState.currentUser && AppState.currentUser.adminId) || 'ADM-001';
         const serverRecord = {
           syncId: 'SRV_SYNC_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5),
+          adminId: currentAdminId,
           receiptNumber: receiptSnapshot.meta.receiptNumber,
           timestamp: new Date().toISOString(),
           status: 'SAVED_200_OK',
@@ -1033,14 +1236,16 @@
 
     renderServerLogsTable() {
       const db = this.getServerDb();
+      const currentAdminId = (AppState.currentUser && AppState.currentUser.adminId) ? AppState.currentUser.adminId : 'ADM-001';
+      const scopedDb = db.filter(rec => (rec.adminId || 'ADM-001') === currentAdminId);
       DOM.serverDbTbody.innerHTML = '';
 
-      if (db.length === 0) {
-        DOM.serverDbTbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400 italic font-sans">No transactions committed to server database yet</td></tr>`;
+      if (scopedDb.length === 0) {
+        DOM.serverDbTbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400 italic font-sans">No transactions committed to server database yet for this store</td></tr>`;
         return;
       }
 
-      db.forEach(rec => {
+      scopedDb.forEach(rec => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-100/60 transition-colors';
         tr.innerHTML = `
@@ -1283,10 +1488,18 @@
       AppState.meta.paymentDetails = p;
       AppState.isBillLocked = false;
 
+      const currentAdminId = (AppState.currentUser && AppState.currentUser.adminId) ? AppState.currentUser.adminId : 'ADM-001';
       const snapshot = JSON.parse(JSON.stringify(AppState));
+      snapshot.adminId = currentAdminId;
       snapshot.createdBy = AppState.currentUser
-        ? { name: AppState.currentUser.name, email: AppState.currentUser.email, role: AppState.currentUser.role }
-        : { name: AppState.meta.cashierName, email: 'worker@billbuddy.com', role: 'worker' };
+        ? {
+            name: AppState.currentUser.name,
+            email: AppState.currentUser.email,
+            role: AppState.currentUser.role,
+            adminId: currentAdminId,
+            workerId: AppState.currentUser.workerId
+          }
+        : { name: AppState.meta.cashierName, email: 'worker@billbuddy.com', role: 'worker', adminId: currentAdminId };
 
       ServerAPI.commitPaymentRecord(snapshot, {
         method: p.method,
@@ -1428,23 +1641,23 @@
         tr.innerHTML = `
           <td class="py-2.5 pl-1 pr-2">
             <div class="flex items-center space-x-1.5">
-              <input type="text" list="master-catalog-datalist" class="item-name-input w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-indigo-500 transition-all" placeholder="Custom item name or pick from catalog..." value="${escapeHtml(item.name)}">
-              <button type="button" class="btn-save-item-to-catalog text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white border border-indigo-200/70 p-2 rounded-xl transition-all shrink-0 shadow-sm" title="Save this custom item to Master Product Catalog">
+              <input type="text" list="master-catalog-datalist" class="item-name-input w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs sm:text-sm font-medium focus:ring-2 focus:ring-brand-500 transition-all" placeholder="Custom item name or pick from catalog..." value="${escapeHtml(item.name)}">
+              <button type="button" class="btn-save-item-to-catalog text-slate-300 hover:text-brand-600 p-1.5 rounded hover:bg-brand-50 transition-colors" title="Save this custom item to Master Product Catalog">
                 <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
               </button>
             </div>
           </td>
           <td class="py-2.5 px-2 text-center">
-            <input type="number" min="1" step="1" class="item-qty-input w-16 px-2 py-1.5 text-center border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500 font-bold" value="${item.qty}">
+            <input type="number" min="1" step="1" class="item-qty-input w-16 px-2 py-1.5 text-center border border-slate-200 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-brand-500 font-semibold" value="${item.qty}">
           </td>
           <td class="py-2.5 px-2 text-right">
-            <input type="number" min="0" step="any" class="item-price-input w-24 px-2.5 py-1.5 text-right border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500 font-bold" value="${item.price}">
+            <input type="number" min="0" step="any" class="item-price-input w-24 px-2 py-1.5 text-right border border-slate-200 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-brand-500 font-semibold" value="${item.price}">
           </td>
-          <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-900 text-xs sm:text-sm item-line-total">
+          <td class="py-2.5 px-2 text-right font-mono font-semibold text-slate-800 text-xs sm:text-sm item-line-total">
             ${CalculationEngine.formatCurrency(item.total)}
           </td>
           <td class="py-2.5 pl-2 text-center">
-            <button type="button" class="btn-delete-row text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white border border-rose-200/70 p-2 rounded-xl transition-all shadow-sm" title="Delete item">
+            <button type="button" class="btn-delete-row text-slate-400 hover:text-rose-600 p-1.5 rounded-md hover:bg-rose-50 transition-colors" title="Delete item">
               <i class="fa-solid fa-trash-can text-xs"></i>
             </button>
           </td>
@@ -1587,6 +1800,7 @@
   const AdminModule = {
     activePeriod: 'all',
     activeWorker: 'all',
+    confirmActionCallback: null,
 
     initAdmin() {
       this.bindAdminSubnav();
@@ -1603,7 +1817,8 @@
         { btn: DOM.adminNavQrcode, panel: DOM.adminPanelQrcode, onOpen: () => QrConfigService.renderAdminQrPreview() },
         { btn: DOM.adminNavWorkers, panel: DOM.adminPanelWorkers, onOpen: () => this.renderWorkerRoster() },
         { btn: DOM.adminNavAnalytics, panel: DOM.adminPanelAnalytics, onOpen: () => this.renderAnalytics() },
-        { btn: DOM.adminNavServer, panel: DOM.adminPanelServer, onOpen: () => ServerAPI.renderServerLogsTable() }
+        { btn: DOM.adminNavServer, panel: DOM.adminPanelServer, onOpen: () => ServerAPI.renderServerLogsTable() },
+        { btn: DOM.adminNavDanger, panel: DOM.adminPanelDanger }
       ];
 
       tabs.forEach(tab => {
@@ -1650,6 +1865,20 @@
         localStorage.setItem(STORAGE_KEYS.QR_CONFIG, JSON.stringify(AppState.qrConfig));
       } catch {}
 
+      // Persist to current admin in users database
+      try {
+        const users = AuthService.getUsers();
+        const currentAdminId = (AppState.currentUser && AppState.currentUser.adminId) ? AppState.currentUser.adminId : 'ADM-001';
+        const adminRec = users.find(u => u.workerId === currentAdminId || (u.role === 'admin' && u.adminId === currentAdminId));
+        if (adminRec) {
+          adminRec.store = JSON.parse(JSON.stringify(AppState.store));
+          adminRec.qrConfig = JSON.parse(JSON.stringify(AppState.qrConfig));
+          localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+        }
+      } catch (e) {
+        console.error('Error persisting company settings to admin user:', e);
+      }
+
       // Sync form inputs
       if (DOM.storeNameInput) DOM.storeNameInput.value = trimmedName;
       if (DOM.storeTaxInput) DOM.storeTaxInput.value = AppState.store.taxId;
@@ -1666,9 +1895,15 @@
     },
 
     populateWorkerFilter() {
-      const users = AuthService.getUsers();
-      DOM.adminFilterWorker.innerHTML = '<option value="all">👥 All Accounts (Group Total)</option>';
-      users.forEach(u => {
+      const allUsers = AuthService.getUsers();
+      const currentAdminId = (AppState.currentUser && AppState.currentUser.adminId) ? AppState.currentUser.adminId : 'ADM-001';
+      const scopedUsers = allUsers.filter(u => {
+        if (u.role === 'admin') return u.workerId === currentAdminId || u.adminId === currentAdminId;
+        return u.adminId === currentAdminId;
+      });
+
+      DOM.adminFilterWorker.innerHTML = '<option value="all">👥 All Accounts (Store Total)</option>';
+      scopedUsers.forEach(u => {
         const opt = document.createElement('option');
         opt.value = u.email;
         opt.textContent = `${u.name} (${u.role.toUpperCase()})`;
@@ -1698,11 +1933,15 @@
       const selectedMonthStr = DOM.productMonthSelect.value || '2026-11';
       const [selYear, selMonth] = selectedMonthStr.split('-').map(Number);
       const history = StorageService.getHistory();
+      const currentAdminId = (AppState.currentUser && AppState.currentUser.adminId) ? AppState.currentUser.adminId : 'ADM-001';
       const productStats = {};
       let totalRevenue = 0;
       let totalVolume = 0;
 
       history.forEach(receipt => {
+        const recAdmin = receipt.adminId || (receipt.createdBy && receipt.createdBy.adminId) || 'ADM-001';
+        if (recAdmin !== currentAdminId) return;
+
         const rDate = new Date(receipt.meta.dateTime || receipt.savedAt);
         if (rDate.getFullYear() === selYear && rDate.getMonth() + 1 === selMonth) {
           (receipt.items || []).forEach(item => {
@@ -1796,8 +2035,8 @@
           <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-50 text-purple-700">${escapeHtml(p.category || 'General')}</span></td>
           <td class="py-2.5 px-4 text-right font-mono font-bold text-slate-900">${AppState.meta.currency}${Number(p.price).toFixed(2)}</td>
           <td class="py-2.5 px-4 text-center">
-            <button type="button" class="btn-admin-delete-product inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-200/70 font-bold text-xs transition-all" data-id="${p.id}" title="Delete product">
-              <i class="fa-solid fa-trash-can text-[11px]"></i>
+            <button type="button" class="btn-admin-delete-product text-slate-400 hover:text-rose-600 p-1 rounded" data-id="${p.id}" title="Delete product">
+              <i class="fa-solid fa-trash-can text-xs"></i>
             </button>
           </td>
         `;
@@ -1810,10 +2049,14 @@
       const selectedMonthStr = DOM.productMonthSelect.value || '2026-11';
       const [selYear, selMonth] = selectedMonthStr.split('-').map(Number);
       const history = StorageService.getHistory();
+      const currentAdminId = (AppState.currentUser && AppState.currentUser.adminId) ? AppState.currentUser.adminId : 'ADM-001';
       const productStats = {};
       let totalMonthlyRevenue = 0;
 
       history.forEach(receipt => {
+        const recAdmin = receipt.adminId || (receipt.createdBy && receipt.createdBy.adminId) || 'ADM-001';
+        if (recAdmin !== currentAdminId) return;
+
         const rDate = new Date(receipt.meta.dateTime || receipt.savedAt);
         if (rDate.getFullYear() === selYear && rDate.getMonth() + 1 === selMonth) {
           (receipt.items || []).forEach(item => {
@@ -1912,10 +2155,16 @@
       }
     },
 
-    // 4. WORKER ROSTER WITH UNIQUE WORKER IDs
+    // 4. WORKER ROSTER WITH UNIQUE WORKER IDs (Strictly Scoped to Current Admin)
     renderWorkerRoster() {
-      const users = AuthService.getUsers();
-      DOM.rosterWorkerCount.textContent = users.length;
+      const allUsers = AuthService.getUsers();
+      const currentAdminId = (AppState.currentUser && AppState.currentUser.adminId) ? AppState.currentUser.adminId : 'ADM-001';
+      const scopedUsers = allUsers.filter(u => {
+        if (u.role === 'admin') return u.workerId === currentAdminId || u.adminId === currentAdminId;
+        return u.adminId === currentAdminId;
+      });
+
+      DOM.rosterWorkerCount.textContent = scopedUsers.length;
       DOM.workerRosterTbody.innerHTML = '';
 
       // Auto-suggest next sequential worker ID in the form
@@ -1923,7 +2172,7 @@
         DOM.newWorkerId.value = AuthService.getNextWorkerId();
       }
 
-      users.forEach(u => {
+      scopedUsers.forEach(u => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50 transition-colors';
         const workerId = u.workerId || (u.role === 'admin' ? 'ADM-001' : 'WRK-100');
@@ -1955,7 +2204,7 @@
             </span>
           </td>
           <td class="py-3 px-5 text-center">
-            ${u.role === 'admin' ? '<span class="text-xs text-slate-400 italic font-semibold">Root Admin</span>' : '<button type="button" class="btn-delete-worker inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-200/70 font-bold text-xs transition-all" data-email="' + escapeHtml(u.email) + '"><i class="fa-solid fa-user-slash text-[10px]"></i> Deactivate</button>'}
+            ${u.role === 'admin' ? '<span class="text-xs text-slate-400 italic">Root Admin</span>' : '<button type="button" class="btn-delete-worker text-xs text-rose-600 hover:text-rose-800 font-semibold" data-email="' + escapeHtml(u.email) + '">Deactivate</button>'}
           </td>
         `;
 
@@ -1963,12 +2212,16 @@
       });
     },
 
-    // 5. SALES OVERVIEW
+    // 5. SALES OVERVIEW & LEDGER (Scoped to Current Admin's Store)
     renderAnalytics() {
       const history = StorageService.getHistory();
       const now = new Date();
+      const currentAdminId = (AppState.currentUser && AppState.currentUser.adminId) ? AppState.currentUser.adminId : 'ADM-001';
 
       const filtered = history.filter(receipt => {
+        const recAdmin = receipt.adminId || (receipt.createdBy && receipt.createdBy.adminId) || 'ADM-001';
+        if (recAdmin !== currentAdminId) return false;
+
         const receiptDate = new Date(receipt.meta.dateTime || receipt.savedAt);
         if (this.activeWorker !== 'all') {
           const email = (receipt.createdBy && receipt.createdBy.email) ? receipt.createdBy.email.toLowerCase() : '';
@@ -2048,6 +2301,94 @@
         `;
         DOM.adminLedgerTbody.appendChild(tr);
       });
+    },
+
+    // 6. DANGER ZONE / PURGE STORE DATA CONTROLS
+    openConfirmModal(title, message, onConfirm) {
+      if (!DOM.dataConfirmModal) return;
+      DOM.dataConfirmTitle.textContent = title;
+      DOM.dataConfirmMessage.textContent = message;
+      this.confirmActionCallback = onConfirm;
+      DOM.dataConfirmModal.classList.remove('hidden');
+    },
+
+    closeConfirmModal() {
+      if (DOM.dataConfirmModal) DOM.dataConfirmModal.classList.add('hidden');
+      this.confirmActionCallback = null;
+    },
+
+    executeConfirmAction() {
+      if (typeof this.confirmActionCallback === 'function') {
+        this.confirmActionCallback();
+      }
+      this.closeConfirmModal();
+    },
+
+    promptClearSales() {
+      const currentAdminId = (AppState.currentUser && AppState.currentUser.adminId) ? AppState.currentUser.adminId : 'ADM-001';
+      this.openConfirmModal(
+        'Clear Store Sales & Receipt History?',
+        `Are you sure you want to permanently delete all saved receipts and server transaction logs for store "${AppState.store.name}"? Master product catalog and staff accounts will be preserved.`,
+        () => {
+          this.clearStoreSales(currentAdminId);
+        }
+      );
+    },
+
+    clearStoreSales(currentAdminId) {
+      const allHistory = StorageService.getHistory();
+      const remainingHistory = allHistory.filter(r => (r.adminId || (r.createdBy && r.createdBy.adminId) || 'ADM-001') !== currentAdminId);
+      localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(remainingHistory));
+
+      const allServer = ServerAPI.getServerDb();
+      const remainingServer = allServer.filter(s => (s.adminId || 'ADM-001') !== currentAdminId);
+      localStorage.setItem(STORAGE_KEYS.SERVER_DB, JSON.stringify(remainingServer));
+
+      HistoryManager.updateBadge();
+      this.renderAnalytics();
+      this.renderMonthlyProductAnalytics();
+      ServerAPI.renderServerLogsTable();
+      Toast.show('Store sales history and server logs have been cleared.', 'info');
+    },
+
+    promptFactoryReset() {
+      const currentAdminId = (AppState.currentUser && AppState.currentUser.adminId) ? AppState.currentUser.adminId : 'ADM-001';
+      this.openConfirmModal(
+        'Factory Reset Store Workspace?',
+        `CRITICAL: This will delete all sales records, delete all worker accounts provisioned under Admin ID "${currentAdminId}", and reset catalog to defaults. Your admin login will be kept. Proceed?`,
+        () => {
+          this.factoryResetStore(currentAdminId);
+        }
+      );
+    },
+
+    factoryResetStore(currentAdminId) {
+      // 1. Wipe sales history and server logs
+      this.clearStoreSales(currentAdminId);
+
+      // 2. Remove all workers provisioned under this admin
+      let users = AuthService.getUsers();
+      users = users.filter(u => {
+        if ((u.adminId || 'ADM-001') !== currentAdminId) return true;
+        return u.role === 'admin';
+      });
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+
+      // 3. Reset catalog to default
+      localStorage.removeItem(STORAGE_KEYS.CATALOG);
+      CatalogService.initCatalog();
+
+      // 4. Reset POS items
+      AppState.items = [{ id: ItemManager.generateItemId(), name: '', qty: 1, price: 0, total: 0 }];
+      ItemManager.renderEditableRows();
+      CalculationEngine.recalculate();
+
+      // 5. Re-render views
+      this.renderWorkerRoster();
+      this.populateWorkerFilter();
+      this.renderAdminCatalog();
+
+      Toast.show('Store workspace has been factory reset to defaults!', 'success');
     }
   };
 
@@ -2096,8 +2437,9 @@
 
         const seedTransactions = [
           {
+            adminId: 'ADM-001',
             meta: { receiptNumber: `REC-${yyyy}${mm}${dd}-1001`, dateTime: dToday, cashierName: 'Rahul Sharma', currency: '₹', paymentMode: 'UPI QR', paymentStatus: 'PAID' },
-            createdBy: { name: 'Rahul Sharma', email: 'rahul@billbuddy.com', role: 'worker' },
+            createdBy: { name: 'Rahul Sharma', email: 'rahul@billbuddy.com', role: 'worker', adminId: 'ADM-001', workerId: 'WRK-101' },
             customer: { name: 'Aarav Mehta', contact: '+91 98200 11223' },
             items: [
               { id: 'it_1', name: 'Logitech Wireless Mouse M185', qty: 2, price: 999, total: 1998 },
@@ -2106,8 +2448,9 @@
             billing: { subtotal: 2347, discountAmount: 0, taxableAmount: 2347, taxRate: 18, taxAmount: 422.46, grandTotal: 2769.46 }
           },
           {
+            adminId: 'ADM-001',
             meta: { receiptNumber: `REC-${yyyy}${mm}${dd}-1002`, dateTime: dToday, cashierName: 'Priya Patel', currency: '₹', paymentMode: 'UPI QR', paymentStatus: 'PAID' },
-            createdBy: { name: 'Priya Patel', email: 'priya@billbuddy.com', role: 'worker' },
+            createdBy: { name: 'Priya Patel', email: 'priya@billbuddy.com', role: 'worker', adminId: 'ADM-001', workerId: 'WRK-102' },
             customer: { name: 'Ananya Roy', contact: '+91 97110 55443' },
             items: [
               { id: 'it_3', name: 'Keychron K2 Mechanical Keyboard', qty: 1, price: 6999, total: 6999 }
@@ -2115,8 +2458,9 @@
             billing: { subtotal: 6999, discountAmount: 349.95, taxableAmount: 6649.05, taxRate: 18, taxAmount: 1196.83, grandTotal: 7845.88 }
           },
           {
+            adminId: 'ADM-001',
             meta: { receiptNumber: `REC-${yyyy}${mm}05-2003`, dateTime: strWeekAgo, cashierName: 'Rahul Sharma', currency: '₹', paymentMode: 'UPI QR', paymentStatus: 'PAID' },
-            createdBy: { name: 'Rahul Sharma', email: 'rahul@billbuddy.com', role: 'worker' },
+            createdBy: { name: 'Rahul Sharma', email: 'rahul@billbuddy.com', role: 'worker', adminId: 'ADM-001', workerId: 'WRK-101' },
             customer: { name: 'Vikram Singh', contact: '+91 98888 22334' },
             items: [
               { id: 'it_4', name: 'SanDisk 128GB Ultra Flash Drive', qty: 3, price: 899, total: 2697 }
@@ -2124,8 +2468,9 @@
             billing: { subtotal: 2697, discountAmount: 0, taxableAmount: 2697, taxRate: 18, taxAmount: 485.46, grandTotal: 3182.46 }
           },
           {
+            adminId: 'ADM-001',
             meta: { receiptNumber: `REC-${yyyy}${mm}01-3004`, dateTime: strMonthAgo, cashierName: 'Priya Patel', currency: '₹', paymentMode: 'UPI QR', paymentStatus: 'PAID' },
-            createdBy: { name: 'Priya Patel', email: 'priya@billbuddy.com', role: 'worker' },
+            createdBy: { name: 'Priya Patel', email: 'priya@billbuddy.com', role: 'worker', adminId: 'ADM-001', workerId: 'WRK-102' },
             customer: { name: 'Kavita Nair', contact: '+91 99000 77889' },
             items: [
               { id: 'it_5', name: 'USB-C Multiport 7-in-1 Hub Adapter', qty: 1, price: 2499, total: 2499 },
@@ -2134,8 +2479,9 @@
             billing: { subtotal: 4097, discountAmount: 204.85, taxableAmount: 3892.15, taxRate: 18, taxAmount: 700.58, grandTotal: 4592.73 }
           },
           {
+            adminId: 'ADM-001',
             meta: { receiptNumber: `REC-${yyyy}0115-4005`, dateTime: strYearAgo, cashierName: 'Rahul Sharma', currency: '₹', paymentMode: 'UPI QR', paymentStatus: 'PAID' },
-            createdBy: { name: 'Rahul Sharma', email: 'rahul@billbuddy.com', role: 'worker' },
+            createdBy: { name: 'Rahul Sharma', email: 'rahul@billbuddy.com', role: 'worker', adminId: 'ADM-001', workerId: 'WRK-101' },
             customer: { name: 'Rohan Deshmukh', contact: '+91 94444 33221' },
             items: [
               { id: 'it_7', name: 'Thermal Receipt Paper Roll 80mm', qty: 5, price: 299, total: 1495 }
@@ -2148,6 +2494,7 @@
 
         const serverLogs = seedTransactions.map((rec, i) => ({
           syncId: `SRV_SYNC_INIT_${i + 1}`,
+          adminId: 'ADM-001',
           receiptNumber: rec.meta.receiptNumber,
           timestamp: rec.meta.dateTime,
           status: 'SAVED_200_OK',
@@ -2192,8 +2539,10 @@
   const HistoryManager = {
     updateBadge() {
       const history = StorageService.getHistory();
-      DOM.historyBadge.textContent = history.length;
-      DOM.historyTotalCount.textContent = history.length;
+      const currentAdminId = (AppState.currentUser && AppState.currentUser.adminId) ? AppState.currentUser.adminId : 'ADM-001';
+      const scoped = history.filter(r => (r.adminId || (r.createdBy && r.createdBy.adminId) || 'ADM-001') === currentAdminId);
+      DOM.historyBadge.textContent = scoped.length;
+      if (DOM.historyTotalCount) DOM.historyTotalCount.textContent = scoped.length;
     },
 
     openModal() {
@@ -2208,10 +2557,13 @@
 
     renderHistoryList(filterQuery = '') {
       const history = StorageService.getHistory();
+      const currentAdminId = (AppState.currentUser && AppState.currentUser.adminId) ? AppState.currentUser.adminId : 'ADM-001';
       DOM.historyTbody.innerHTML = '';
       const query = filterQuery.trim().toLowerCase();
 
       const filtered = history.filter(item => {
+        const itemAdmin = item.adminId || (item.createdBy && item.createdBy.adminId) || 'ADM-001';
+        if (itemAdmin !== currentAdminId) return false;
         const recNum = (item.meta.receiptNumber || '').toLowerCase();
         const custName = (item.customer.name || '').toLowerCase();
         const cashier = (item.meta.cashierName || '').toLowerCase();
@@ -2384,7 +2736,49 @@
   // 19. EVENT WIRING & LISTENERS
   // ============================================================================
   function setupEventListeners() {
-    // 1. Splash Sign-In Form (Explicit User Entry)
+    // 1. Splash Gate (Sign-In & Admin Registration Tabs)
+    if (DOM.btnSplashTabSignin && DOM.btnSplashTabRegister) {
+      DOM.btnSplashTabSignin.addEventListener('click', () => {
+        DOM.splashPanelSignin.classList.remove('hidden');
+        DOM.splashPanelRegister.classList.add('hidden');
+        DOM.btnSplashTabSignin.className = 'flex-1 py-2.5 px-3 rounded-xl bg-white text-slate-900 shadow-sm transition-all flex items-center justify-center gap-2 font-bold';
+        DOM.btnSplashTabRegister.className = 'flex-1 py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-2 font-semibold';
+      });
+
+      DOM.btnSplashTabRegister.addEventListener('click', () => {
+        DOM.splashPanelSignin.classList.add('hidden');
+        DOM.splashPanelRegister.classList.remove('hidden');
+        DOM.btnSplashTabRegister.className = 'flex-1 py-2.5 px-3 rounded-xl bg-white text-slate-900 shadow-sm transition-all flex items-center justify-center gap-2 font-bold';
+        DOM.btnSplashTabSignin.className = 'flex-1 py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-2 font-semibold';
+        if (DOM.regAdminId && !DOM.regAdminId.value) {
+          DOM.regAdminId.value = AuthService.getNextAdminId();
+        }
+      });
+    }
+
+    if (DOM.btnAutoAdminId) {
+      DOM.btnAutoAdminId.addEventListener('click', () => {
+        DOM.regAdminId.value = AuthService.getNextAdminId();
+        Toast.show(`Assigned Admin ID: ${DOM.regAdminId.value}`, 'info');
+      });
+    }
+
+    if (DOM.btnSubmitAdminRegister) {
+      DOM.btnSubmitAdminRegister.addEventListener('click', () => {
+        AuthService.registerAdmin({
+          name: DOM.regAdminName.value,
+          workerId: DOM.regAdminId.value,
+          email: DOM.regAdminEmail.value,
+          password: DOM.regAdminPassword.value,
+          storeName: DOM.regStoreName.value,
+          storeAddress: DOM.regStoreAddress.value,
+          storeTax: DOM.regStoreTax.value,
+          storePhone: DOM.regStorePhone.value,
+          storeUpi: DOM.regStoreUpi.value
+        });
+      });
+    }
+
     DOM.btnSplashSignin.addEventListener('click', () => {
       AuthService.login(DOM.splashEmail.value, DOM.splashPassword.value);
     });
@@ -2750,6 +3144,7 @@
           let users = AuthService.getUsers().filter(u => u.email !== email);
           localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
           AdminModule.renderWorkerRoster();
+          AdminModule.populateWorkerFilter();
           Toast.show(`Account ${email} deactivated`, 'info');
         }
       }
@@ -2810,6 +3205,20 @@
       Toast.show('Server Database exported to JSON', 'success');
     });
 
+    // 12b. Admin Danger Zone / Purge Data Controls
+    if (DOM.btnClearStoreSales) {
+      DOM.btnClearStoreSales.addEventListener('click', () => AdminModule.promptClearSales());
+    }
+    if (DOM.btnFactoryResetStore) {
+      DOM.btnFactoryResetStore.addEventListener('click', () => AdminModule.promptFactoryReset());
+    }
+    if (DOM.btnConfirmDataWipe) {
+      DOM.btnConfirmDataWipe.addEventListener('click', () => AdminModule.executeConfirmAction());
+    }
+    if (DOM.btnCancelDataWipe) {
+      DOM.btnCancelDataWipe.addEventListener('click', () => AdminModule.closeConfirmModal());
+    }
+
     // 13. Worker Catalog Modal
     DOM.btnOpenCatalog.addEventListener('click', () => CatalogService.openWorkerCatalogModal());
     DOM.btnCloseCatalogModal.addEventListener('click', () => CatalogService.closeWorkerCatalogModal());
@@ -2865,7 +3274,8 @@
     });
 
     // Backdrop clicks
-    [DOM.paymentModal, DOM.catalogModal, DOM.historyModal, DOM.presentationModal].forEach(m => {
+    [DOM.paymentModal, DOM.catalogModal, DOM.historyModal, DOM.presentationModal, DOM.dataConfirmModal].forEach(m => {
+      if (!m) return;
       m.addEventListener('click', e => {
         if (e.target === m) m.classList.add('hidden');
       });
