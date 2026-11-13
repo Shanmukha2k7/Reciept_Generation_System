@@ -5,8 +5,7 @@
   "main": "index.html",
   "scripts": {
     "start": "serve .",
-    "dev": "serve .",
-    "build": "echo 'Build complete'"
+    "dev": "serve ."
   },
   "keywords": [
     "pos",
