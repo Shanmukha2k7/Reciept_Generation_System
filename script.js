@@ -651,20 +651,6 @@
       Toast.show(`Welcome, ${user.name}! (${user.workerId || user.role.toUpperCase()})`, 'success');
       return true;
     },
-      localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(AppState.currentUser));
-
-      DOM.splashAuthOverlay.classList.add('hidden');
-      this.applyUserInterface();
-      Toast.show(`Welcome, ${user.name}! (${user.role.toUpperCase()})`, 'success');
-      return true;
-    },
-      localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(AppState.currentUser));
-
-      DOM.splashAuthOverlay.classList.add('hidden');
-      this.applyUserInterface();
-      Toast.show(`Welcome, ${user.name}! (${user.role.toUpperCase()})`, 'success');
-      return true;
-    },
 
     logout() {
       localStorage.removeItem(STORAGE_KEYS.SESSION);
@@ -882,7 +868,7 @@
         (item.category || '').toLowerCase().includes(query)
       );
 
-      DOM.catalogTotalCount.textContent = catalog.length;
+      if (DOM.catalogTotalCount) DOM.catalogTotalCount.textContent = catalog.length;
 
       if (filtered.length === 0) {
         DOM.catalogTbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-400 italic">No products found</td></tr>`;
@@ -1323,7 +1309,6 @@
         confetti({ particleCount: 70, spread: 70, origin: { y: 0.8 } });
       }
     }
-  };
   };
 
   // ============================================================================
@@ -1884,7 +1869,7 @@
       const revenueData = topProducts.map(p => p.revenue);
 
       const barCanvas = document.getElementById('product-sales-bar-chart');
-      if (barCanvas) {
+      if (barCanvas && typeof Chart !== 'undefined') {
         if (productBarChartInstance) productBarChartInstance.destroy();
         productBarChartInstance = new Chart(barCanvas, {
           type: 'bar',
@@ -1907,7 +1892,7 @@
       }
 
       const pieCanvas = document.getElementById('product-sales-pie-chart');
-      if (pieCanvas) {
+      if (pieCanvas && typeof Chart !== 'undefined') {
         if (productPieChartInstance) productPieChartInstance.destroy();
         productPieChartInstance = new Chart(pieCanvas, {
           type: 'doughnut',

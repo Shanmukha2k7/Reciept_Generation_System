@@ -1,0 +1,23 @@
+{
+  "name": "billbuddy",
+  "version": "1.0.0",
+  "description": "BillBuddy - Enterprise POS & Sales Intelligence System",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve .",
+    "dev": "serve .",
+    "build": "echo 'Build complete'"
+  },
+  "keywords": [
+    "pos",
+    "receipt-generator",
+    "billing-system",
+    "sales-intelligence",
+    "billbuddy"
+  ],
+  "author": "BillBuddy",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}
