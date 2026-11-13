@@ -1,0 +1,355 @@
+/* ==========================================================================
+   BillBuddy - Stylesheet
+   Tailored for Enterprise POS, QR Gateway, Analytics Charts & Clean Printing
+   ========================================================================== */
+
+:root {
+  --receipt-font-thermal: 'Space Mono', monospace;
+  --receipt-font-invoice: 'Inter', sans-serif;
+  --paper-bg: #ffffff;
+  --paper-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ==========================================================================
+   RECEIPT PAPER MODES (Thermal 80mm vs Standard A4)
+   ========================================================================== */
+.receipt-paper {
+  background-color: var(--paper-bg);
+  box-shadow: var(--paper-shadow);
+  transition: all 0.25s ease-in-out;
+  position: relative;
+}
+
+/* Thermal 80mm Style */
+.receipt-paper.thermal-mode {
+  width: 100%;
+  max-width: 360px;
+  font-family: var(--receipt-font-thermal);
+  border-radius: 4px;
+  background-color: #fffdfa;
+  padding: 1.75rem 1.25rem;
+}
+
+.receipt-paper.thermal-mode .receipt-header h2 {
+  font-family: var(--receipt-font-thermal);
+  letter-spacing: -0.02em;
+}
+
+.receipt-paper.thermal-mode .perforated-edge-top,
+.receipt-paper.thermal-mode .perforated-edge-bottom {
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background-size: 16px 8px;
+  background-repeat: repeat-x;
+}
+
+.receipt-paper.thermal-mode .perforated-edge-top {
+  top: -8px;
+  background-image: radial-gradient(circle at 8px 8px, transparent 6px, #fffdfa 7px);
+}
+
+.receipt-paper.thermal-mode .perforated-edge-bottom {
+  bottom: -8px;
+  background-image: radial-gradient(circle at 8px 0px, transparent 6px, #fffdfa 7px);
+}
+
+/* Standard A4 Invoice Style */
+.receipt-paper.a4-mode {
+  width: 100%;
+  max-width: 580px;
+  font-family: var(--receipt-font-invoice);
+  border-radius: 12px;
+  padding: 2.25rem 2rem;
+  border-top: 6px solid #4f46e5;
+}
+
+.receipt-paper.a4-mode .perforated-edge-top,
+.receipt-paper.a4-mode .perforated-edge-bottom {
+  display: none;
+}
+
+.receipt-paper.a4-mode .receipt-header {
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.receipt-paper.a4-mode .receipt-header h2 {
+  font-family: var(--receipt-font-invoice);
+  font-size: 1.35rem;
+  color: #1e1b4b;
+}
+
+.receipt-paper.a4-mode .receipt-meta {
+  font-family: var(--receipt-font-invoice);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1.5rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.receipt-paper.a4-mode table {
+  font-family: var(--receipt-font-invoice);
+}
+
+.receipt-paper.a4-mode table thead tr {
+  background-color: #f8fafc;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.receipt-paper.a4-mode table thead th {
+  padding: 0.5rem 0.25rem;
+}
+
+.receipt-paper.a4-mode .receipt-totals {
+  font-family: var(--receipt-font-invoice);
+  margin-left: auto;
+  width: 65%;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* ==========================================================================
+   SIMULATED RETAIL BARCODE
+   ========================================================================== */
+.simulated-barcode {
+  width: 190px;
+  height: 38px;
+  background: repeating-linear-gradient(
+    90deg,
+    #1e293b 0px,
+    #1e293b 2px,
+    transparent 2px,
+    transparent 4px,
+    #1e293b 4px,
+    #1e293b 7px,
+    transparent 7px,
+    transparent 9px,
+    #1e293b 9px,
+    #1e293b 10px,
+    transparent 10px,
+    transparent 13px,
+    #1e293b 13px,
+    #1e293b 16px,
+    transparent 16px,
+    transparent 18px,
+    #1e293b 18px,
+    #1e293b 20px,
+    transparent 20px,
+    transparent 21px,
+    #1e293b 21px,
+    #1e293b 23px,
+    transparent 23px,
+    transparent 26px
+  );
+  opacity: 0.85;
+}
+
+/* ==========================================================================
+   BUTTONS & TABS ACTIVE STATES
+   ========================================================================== */
+.discount-toggle-btn.active {
+  background-color: #4f46e5 !important;
+  color: #ffffff !important;
+  border-color: #4f46e5 !important;
+}
+
+.format-btn.active {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+}
+
+.view-switch-btn.active {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.admin-tab-btn.active {
+  background-color: #9333ea !important; /* purple-600 */
+  color: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(147, 51, 234, 0.2);
+}
+
+.pay-method-tab.active {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.admin-time-btn.active {
+  background-color: #9333ea !important;
+  color: #ffffff !important;
+}
+
+/* ==========================================================================
+   CAPTCHA CANVAS & QR CODE CONTAINER
+   ========================================================================== */
+#splash-captcha-canvas {
+  user-select: none;
+  -webkit-user-select: none;
+  background: #f8fafc;
+}
+
+#checkout-qr-box img,
+#checkout-qr-box canvas,
+#admin-qr-render-box img,
+#admin-qr-render-box canvas {
+  margin: 0 auto;
+  border-radius: 8px;
+}
+
+/* ==========================================================================
+   TOAST NOTIFICATION STYLING
+   ========================================================================== */
+.toast {
+  pointer-events: auto;
+  min-width: 280px;
+  max-width: 380px;
+  padding: 0.85rem 1rem;
+  border-radius: 0.85rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.toast-success { border-left: 4px solid #10b981; }
+.toast-info { border-left: 4px solid #4f46e5; }
+.toast-warning { border-left: 4px solid #f59e0b; }
+.toast-error { border-left: 4px solid #ef4444; }
+
+/* ==========================================================================
+   PRINT STYLESHEET (@media print)
+   Strictly prints ONLY the unlocked receipt!
+   ========================================================================== */
+@media print {
+  @page {
+    margin: 5mm;
+    size: auto;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    font-size: 11pt !important;
+  }
+
+  .app-header,
+  #splash-auth-overlay,
+  #view-admin,
+  .form-column,
+  .preview-column > div:first-child,
+  .preview-column > div:last-child,
+  #receipt-locked-overlay,
+  #payment-modal,
+  #catalog-modal,
+  #history-modal,
+  #toast-container,
+  .receipt-viewport-container::-webkit-scrollbar,
+  .perforated-edge-top,
+  .perforated-edge-bottom {
+    display: none !important;
+  }
+
+  main {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .grid {
+    display: block !important;
+  }
+
+  .preview-column {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .receipt-viewport-container {
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  #receipt-paper {
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 auto !important;
+    padding: 10px 0 !important;
+  }
+
+  #receipt-paper.thermal-mode {
+    width: 78mm !important;
+    max-width: 78mm !important;
+    margin: 0 auto !important;
+  }
+
+  #receipt-paper.a4-mode {
+    width: 100% !important;
+    max-width: 190mm !important;
+    margin: 0 auto !important;
+    border-top: 3px solid #000000 !important;
+  }
+
+  table, tr, td, th {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    border-color: #666666 !important;
+    color: #000000 !important;
+  }
+
+  .simulated-barcode {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    opacity: 1 !important;
+  }
+}
