@@ -6,7 +6,7 @@
   "scripts": {
     "start": "serve public",
     "dev": "serve public",
-    "build": "node -e \"const fs = require('fs'); if (!fs.existsSync('public')) fs.mkdirSync('public'); ['index.html','style.css','script.js'].forEach(f => fs.copyFileSync(f, 'public/' + f)); console.log('Build complete: assets copied to public/');\""
+    "build": "node build.js"
   },
   "keywords": [
     "pos",
