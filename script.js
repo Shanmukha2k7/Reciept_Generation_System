@@ -1428,23 +1428,23 @@
         tr.innerHTML = `
           <td class="py-2.5 pl-1 pr-2">
             <div class="flex items-center space-x-1.5">
-              <input type="text" list="master-catalog-datalist" class="item-name-input w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs sm:text-sm font-medium focus:ring-2 focus:ring-brand-500 transition-all" placeholder="Custom item name or pick from catalog..." value="${escapeHtml(item.name)}">
-              <button type="button" class="btn-save-item-to-catalog text-slate-300 hover:text-brand-600 p-1.5 rounded hover:bg-brand-50 transition-colors" title="Save this custom item to Master Product Catalog">
+              <input type="text" list="master-catalog-datalist" class="item-name-input w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-indigo-500 transition-all" placeholder="Custom item name or pick from catalog..." value="${escapeHtml(item.name)}">
+              <button type="button" class="btn-save-item-to-catalog text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white border border-indigo-200/70 p-2 rounded-xl transition-all shrink-0 shadow-sm" title="Save this custom item to Master Product Catalog">
                 <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
               </button>
             </div>
           </td>
           <td class="py-2.5 px-2 text-center">
-            <input type="number" min="1" step="1" class="item-qty-input w-16 px-2 py-1.5 text-center border border-slate-200 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-brand-500 font-semibold" value="${item.qty}">
+            <input type="number" min="1" step="1" class="item-qty-input w-16 px-2 py-1.5 text-center border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500 font-bold" value="${item.qty}">
           </td>
           <td class="py-2.5 px-2 text-right">
-            <input type="number" min="0" step="any" class="item-price-input w-24 px-2 py-1.5 text-right border border-slate-200 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-brand-500 font-semibold" value="${item.price}">
+            <input type="number" min="0" step="any" class="item-price-input w-24 px-2.5 py-1.5 text-right border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500 font-bold" value="${item.price}">
           </td>
-          <td class="py-2.5 px-2 text-right font-mono font-semibold text-slate-800 text-xs sm:text-sm item-line-total">
+          <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-900 text-xs sm:text-sm item-line-total">
             ${CalculationEngine.formatCurrency(item.total)}
           </td>
           <td class="py-2.5 pl-2 text-center">
-            <button type="button" class="btn-delete-row text-slate-400 hover:text-rose-600 p-1.5 rounded-md hover:bg-rose-50 transition-colors" title="Delete item">
+            <button type="button" class="btn-delete-row text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white border border-rose-200/70 p-2 rounded-xl transition-all shadow-sm" title="Delete item">
               <i class="fa-solid fa-trash-can text-xs"></i>
             </button>
           </td>
@@ -1796,8 +1796,8 @@
           <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-50 text-purple-700">${escapeHtml(p.category || 'General')}</span></td>
           <td class="py-2.5 px-4 text-right font-mono font-bold text-slate-900">${AppState.meta.currency}${Number(p.price).toFixed(2)}</td>
           <td class="py-2.5 px-4 text-center">
-            <button type="button" class="btn-admin-delete-product text-slate-400 hover:text-rose-600 p-1 rounded" data-id="${p.id}" title="Delete product">
-              <i class="fa-solid fa-trash-can text-xs"></i>
+            <button type="button" class="btn-admin-delete-product inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-200/70 font-bold text-xs transition-all" data-id="${p.id}" title="Delete product">
+              <i class="fa-solid fa-trash-can text-[11px]"></i>
             </button>
           </td>
         `;
@@ -1955,7 +1955,7 @@
             </span>
           </td>
           <td class="py-3 px-5 text-center">
-            ${u.role === 'admin' ? '<span class="text-xs text-slate-400 italic">Root Admin</span>' : '<button type="button" class="btn-delete-worker text-xs text-rose-600 hover:text-rose-800 font-semibold" data-email="' + escapeHtml(u.email) + '">Deactivate</button>'}
+            ${u.role === 'admin' ? '<span class="text-xs text-slate-400 italic font-semibold">Root Admin</span>' : '<button type="button" class="btn-delete-worker inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-200/70 font-bold text-xs transition-all" data-email="' + escapeHtml(u.email) + '"><i class="fa-solid fa-user-slash text-[10px]"></i> Deactivate</button>'}
           </td>
         `;
 
