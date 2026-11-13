@@ -4,8 +4,9 @@
   "description": "BillBuddy - Enterprise POS & Sales Intelligence System",
   "main": "index.html",
   "scripts": {
-    "start": "serve .",
-    "dev": "serve ."
+    "start": "serve public",
+    "dev": "serve public",
+    "build": "node -e \"const fs = require('fs'); if (!fs.existsSync('public')) fs.mkdirSync('public'); ['index.html','style.css','script.js'].forEach(f => fs.copyFileSync(f, 'public/' + f)); console.log('Build complete: assets copied to public/');\""
   },
   "keywords": [
     "pos",
