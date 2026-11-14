@@ -146,7 +146,7 @@
             </div>
 
             <button id="btn-splash-signin" type="button" class="w-full py-3.5 sm:py-4 px-6 rounded-2xl font-bold text-white btn-modern-primary text-sm sm:text-base tracking-wide flex items-center justify-center gap-2 shadow-lg">
-              <span>Sign In & Verify Email OTP</span>
+              <span>Sign In</span>
               <i class="fa-solid fa-arrow-right text-sm"></i>
             </button>
 
@@ -155,50 +155,6 @@
                 <strong class="text-slate-700">Strict Role Separation:</strong> Workers access POS Billing; Store Owners manage Executive Analytics, Bill Formats & Staff.
               </p>
             </div>
-          </div>
-
-          <!-- STEP 2 OF SIGN-IN: EMAIL OTP VERIFICATION AFTER PASSWORD -->
-          <div id="signin-otp-step" class="space-y-4 hidden">
-            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-              <div class="flex items-center gap-2">
-                <i class="fa-solid fa-shield-halved text-purple-600"></i>
-                <span class="text-xs font-extrabold uppercase tracking-wider text-slate-800">Verify Email OTP</span>
-              </div>
-              <button type="button" id="btn-signin-otp-back" class="text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-slate-100">
-                <i class="fa-solid fa-arrow-left"></i>
-                <span>Back</span>
-              </button>
-            </div>
-
-            <div class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 space-y-1.5">
-              <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider">
-                <i class="fa-solid fa-circle-check text-emerald-600"></i>
-                <span>Password Verified • OTP Sent!</span>
-              </div>
-              <p class="text-xs text-emerald-700">
-                Enter the 6-digit OTP sent to <strong id="signin-otp-email-display" class="font-mono text-emerald-950"></strong>
-              </p>
-              <div class="p-2 bg-white/90 rounded-xl border border-emerald-300 flex items-center justify-between mt-1">
-                <span class="text-[11px] font-semibold text-slate-600">Simulated Email OTP:</span>
-                <span id="signin-simulated-otp-code" class="font-mono font-black text-base text-purple-700 tracking-widest bg-purple-50 px-2.5 py-0.5 rounded-lg border border-purple-200"></span>
-              </div>
-            </div>
-
-            <div>
-              <label for="signin-otp-input" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 text-center">Enter 6-Digit OTP *</label>
-              <input type="text" id="signin-otp-input" maxlength="6" class="w-full py-2.5 px-4 bg-white border-2 border-purple-300 rounded-xl font-mono text-center text-xl font-black tracking-[0.35em] text-slate-800 focus:ring-2 focus:ring-purple-500" placeholder="••••••">
-              <p id="signin-otp-error" class="text-[11px] font-bold text-rose-600 mt-1 text-center hidden"></p>
-            </div>
-
-            <div class="flex items-center justify-between text-xs text-slate-500 px-1">
-              <span>Expires in: <strong id="signin-otp-countdown" class="text-slate-700 font-mono">05:00</strong></span>
-              <button type="button" id="btn-signin-resend-otp" class="font-bold text-purple-600 hover:text-purple-700 disabled:text-slate-400 disabled:cursor-not-allowed" disabled>Resend OTP</button>
-            </div>
-
-            <button id="btn-signin-verify-otp" type="button" class="w-full py-3.5 px-6 rounded-2xl font-bold text-white btn-modern-primary text-sm flex items-center justify-center gap-2 shadow-lg">
-              <i class="fa-solid fa-circle-check"></i>
-              <span>Verify OTP & Sign In</span>
-            </button>
           </div>
         </form>
       </div>
@@ -2307,7 +2263,7 @@
             <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
             <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
           </svg>
-          <span class="text-sm font-bold text-slate-800">Sign in with Google</span>
+          <span id="google-modal-title" class="text-sm font-bold text-slate-800">Sign in with Google</span>
         </div>
         <button id="btn-close-google-modal" type="button" class="text-slate-400 hover:text-slate-600 text-sm p-1">
           <i class="fa-solid fa-xmark"></i>
@@ -2379,8 +2335,8 @@
         <div class="flex gap-2 pt-1">
           <button id="btn-google-password-back" type="button" class="py-2.5 px-4 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50">Back</button>
           <button id="btn-google-password-next" type="button" class="flex-1 py-2.5 px-4 rounded-xl font-bold text-white btn-modern-primary text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md">
-            <span>Next — Send OTP</span>
-            <i class="fa-solid fa-paper-plane text-xs"></i>
+            <span id="google-password-next-label">Next — Send OTP</span>
+            <i id="google-password-next-icon" class="fa-solid fa-paper-plane text-xs"></i>
           </button>
         </div>
       </div>
@@ -2419,7 +2375,7 @@
       </div>
 
       <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-        <span>Email + Password + OTP Verified</span>
+        <span id="google-modal-footer-text">Email + Password Verified</span>
         <span>Secure Access</span>
       </div>
     </div>

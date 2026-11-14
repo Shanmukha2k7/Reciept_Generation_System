@@ -233,15 +233,6 @@
     splashEmailErrorText: document.getElementById('splash-email-error-text'),
     splashPassword: document.getElementById('splash-password'),
     btnSplashSignin: document.getElementById('btn-splash-signin'),
-    signinOtpStep: document.getElementById('signin-otp-step'),
-    btnSigninOtpBack: document.getElementById('btn-signin-otp-back'),
-    signinOtpEmailDisplay: document.getElementById('signin-otp-email-display'),
-    signinSimulatedOtpCode: document.getElementById('signin-simulated-otp-code'),
-    signinOtpInput: document.getElementById('signin-otp-input'),
-    signinOtpError: document.getElementById('signin-otp-error'),
-    signinOtpCountdown: document.getElementById('signin-otp-countdown'),
-    btnSigninResendOtp: document.getElementById('btn-signin-resend-otp'),
-    btnSigninVerifyOtp: document.getElementById('btn-signin-verify-otp'),
     splashTabSwitcher: document.getElementById('splash-tab-switcher'),
     btnSplashForgotPassword: document.getElementById('btn-splash-forgot-password'),
     splashPanelForgot: document.getElementById('splash-panel-forgot'),
@@ -270,6 +261,10 @@
     googlePasswordError: document.getElementById('google-password-error'),
     btnGooglePasswordBack: document.getElementById('btn-google-password-back'),
     btnGooglePasswordNext: document.getElementById('btn-google-password-next'),
+    googlePasswordNextLabel: document.getElementById('google-password-next-label'),
+    googlePasswordNextIcon: document.getElementById('google-password-next-icon'),
+    googleModalTitle: document.getElementById('google-modal-title'),
+    googleModalFooterText: document.getElementById('google-modal-footer-text'),
     googleOtpEmailDisplay: document.getElementById('google-otp-email-display'),
     googleSimulatedOtpCode: document.getElementById('google-simulated-otp-code'),
     googleInputOtp: document.getElementById('google-input-otp'),
@@ -1495,6 +1490,12 @@
       showInlineError(DOM.googlePasswordError, null, '');
       showInlineError(DOM.googleOtpError, null, '');
 
+      const isSignup = mode === 'signup';
+      if (DOM.googleModalTitle) DOM.googleModalTitle.textContent = isSignup ? 'Create account with Google' : 'Sign in with Google';
+      if (DOM.googlePasswordNextLabel) DOM.googlePasswordNextLabel.textContent = isSignup ? 'Next — Send OTP' : 'Sign In';
+      if (DOM.googlePasswordNextIcon) DOM.googlePasswordNextIcon.className = isSignup ? 'fa-solid fa-paper-plane text-xs' : 'fa-solid fa-arrow-right-to-bracket text-xs';
+      if (DOM.googleModalFooterText) DOM.googleModalFooterText.textContent = isSignup ? 'Email + Password + OTP Verified' : 'Email + Password Verified';
+
       this.goToStep(1);
       if (DOM.googleAuthModal) DOM.googleAuthModal.classList.remove('hidden');
       if (DOM.googleInputEmail) setTimeout(() => DOM.googleInputEmail.focus(), 60);
@@ -1569,6 +1570,12 @@
 
       showInlineError(DOM.googlePasswordError, null, '');
       this.pendingPassword = password;
+
+      // Sign-In: no OTP needed — log in directly after email + password
+      if (this.mode === 'signin') {
+        this.finishGoogleSignin();
+        return true;
+      }
 
       this.otp = String(Math.floor(100000 + Math.random() * 900000));
       this.otpExpiresAt = Date.now() + 120 * 1000;
@@ -1688,6 +1695,14 @@
         return true;
       }
 
+      this.finishGoogleSignin();
+      return true;
+    },
+
+    finishGoogleSignin() {
+      this.clearTimers();
+      this.closeModal();
+
       const users = AuthService.getUsers();
       let user = users.find(u => u.email && u.email.toLowerCase() === this.pendingEmail);
       if (!user) {
@@ -1800,27 +1815,14 @@
       this.promptSplashAuth();
     },
 
-    pendingLoginUser: null,
-    signinOtp: null,
-    signinOtpExpiresAt: 0,
-    signinCountdownTimer: null,
-    signinResendTimer: null,
-    signinResendCooldown: 0,
-
     promptSplashAuth() {
       localStorage.removeItem(STORAGE_KEYS.SESSION);
       AppState.currentUser = null;
-      this.clearSigninOtpTimers();
-      this.pendingLoginUser = null;
-      this.signinOtp = null;
       if (DOM.splashEmail) DOM.splashEmail.value = '';
       if (DOM.splashPassword) DOM.splashPassword.value = '';
       if (DOM.signinCaptchaInput) DOM.signinCaptchaInput.value = '';
-      if (DOM.signinOtpInput) DOM.signinOtpInput.value = '';
       showInlineError(DOM.splashEmailError, DOM.splashEmailErrorText, '');
-      showInlineError(DOM.signinOtpError, null, '');
       if (DOM.signinCredentialsStep) DOM.signinCredentialsStep.classList.remove('hidden');
-      if (DOM.signinOtpStep) DOM.signinOtpStep.classList.add('hidden');
       if (DOM.splashTabSwitcher) DOM.splashTabSwitcher.classList.remove('hidden');
       if (DOM.splashPanelForgot) DOM.splashPanelForgot.classList.add('hidden');
       if (DOM.splashPanelSignin) DOM.splashPanelSignin.classList.remove('hidden');
@@ -1950,127 +1952,13 @@
         return false;
       }
 
-      // Require email OTP verification after password & captcha succeed
-      this.startSigninOtpStep(user);
-      return true;
-    },
-
-    startSigninOtpStep(user) {
-      this.pendingLoginUser = user;
-      this.signinOtp = String(Math.floor(100000 + Math.random() * 900000));
-      this.signinOtpExpiresAt = Date.now() + 120 * 1000;
-
-      if (DOM.signinCredentialsStep) DOM.signinCredentialsStep.classList.add('hidden');
-      if (DOM.signinOtpStep) DOM.signinOtpStep.classList.remove('hidden');
-      if (DOM.signinOtpEmailDisplay) DOM.signinOtpEmailDisplay.textContent = user.email || `${user.workerId}@billbuddy.com`;
-      if (DOM.signinSimulatedOtpCode) DOM.signinSimulatedOtpCode.textContent = this.signinOtp;
-      if (DOM.signinOtpInput) DOM.signinOtpInput.value = '';
-      showInlineError(DOM.signinOtpError, null, '');
-
-      this.startSigninOtpTimers();
-      Toast.show(`OTP sent to ${user.email || user.workerId}! Simulated OTP: ${this.signinOtp}`, 'info');
-      if (DOM.signinOtpInput) setTimeout(() => DOM.signinOtpInput.focus(), 60);
-    },
-
-    resendSigninOtp() {
-      if (!this.pendingLoginUser) return;
-      this.signinOtp = String(Math.floor(100000 + Math.random() * 900000));
-      this.signinOtpExpiresAt = Date.now() + 120 * 1000;
-      if (DOM.signinSimulatedOtpCode) DOM.signinSimulatedOtpCode.textContent = this.signinOtp;
-      if (DOM.signinOtpInput) DOM.signinOtpInput.value = '';
-      showInlineError(DOM.signinOtpError, null, '');
-      this.startSigninOtpTimers();
-      Toast.show(`New OTP sent to ${this.pendingLoginUser.email}: ${this.signinOtp}`, 'info');
-    },
-
-    startSigninOtpTimers() {
-      this.clearSigninOtpTimers();
-
-      const updateCountdown = () => {
-        const remaining = Math.max(0, Math.floor((this.signinOtpExpiresAt - Date.now()) / 1000));
-        if (DOM.signinOtpCountdown) {
-          if (remaining <= 0) {
-            DOM.signinOtpCountdown.textContent = 'Expired';
-          } else {
-            const mins = String(Math.floor(remaining / 60)).padStart(2, '0');
-            const secs = String(remaining % 60).padStart(2, '0');
-            DOM.signinOtpCountdown.textContent = `${mins}:${secs}`;
-          }
-        }
-        if (remaining <= 0 && this.signinCountdownTimer) {
-          clearInterval(this.signinCountdownTimer);
-          this.signinCountdownTimer = null;
-        }
-      };
-
-      updateCountdown();
-      this.signinCountdownTimer = setInterval(updateCountdown, 1000);
-
-      this.signinResendCooldown = 30;
-      const updateResendBtn = () => {
-        if (!DOM.btnSigninResendOtp) return;
-        if (this.signinResendCooldown > 0) {
-          DOM.btnSigninResendOtp.disabled = true;
-          DOM.btnSigninResendOtp.textContent = `Resend OTP (${this.signinResendCooldown}s)`;
-        } else {
-          DOM.btnSigninResendOtp.disabled = false;
-          DOM.btnSigninResendOtp.textContent = 'Resend OTP';
-          if (this.signinResendTimer) {
-            clearInterval(this.signinResendTimer);
-            this.signinResendTimer = null;
-          }
-        }
-      };
-
-      updateResendBtn();
-      this.signinResendTimer = setInterval(() => {
-        this.signinResendCooldown = Math.max(0, this.signinResendCooldown - 1);
-        updateResendBtn();
-      }, 1000);
-    },
-
-    clearSigninOtpTimers() {
-      if (this.signinCountdownTimer) {
-        clearInterval(this.signinCountdownTimer);
-        this.signinCountdownTimer = null;
+      // Password & captcha verified — sign in directly (no OTP on Sign-In)
+      if (user.isPendingGoogleOwner) {
+        delete user.isPendingGoogleOwner;
+        users.push(user);
+        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
       }
-      if (this.signinResendTimer) {
-        clearInterval(this.signinResendTimer);
-        this.signinResendTimer = null;
-      }
-    },
-
-    verifySigninOtp() {
-      const entered = (DOM.signinOtpInput ? DOM.signinOtpInput.value : '').trim();
-      if (!this.pendingLoginUser || !this.signinOtp || Date.now() > this.signinOtpExpiresAt) {
-        const msg = 'OTP expired! Please click Resend OTP to generate a new verification code.';
-        showInlineError(DOM.signinOtpError, null, msg);
-        Toast.show(msg, 'error');
-        return false;
-      }
-      if (!/^\d{6}$/.test(entered) || entered !== this.signinOtp) {
-        const msg = 'Invalid OTP code! Please enter the exact 6-digit verification code.';
-        showInlineError(DOM.signinOtpError, null, msg);
-        Toast.show(msg, 'error');
-        return false;
-      }
-
-      showInlineError(DOM.signinOtpError, null, '');
-      this.clearSigninOtpTimers();
-
-      const verifiedUser = { ...this.pendingLoginUser };
-      if (verifiedUser.isPendingGoogleOwner) {
-        delete verifiedUser.isPendingGoogleOwner;
-        const users = this.getUsers();
-        if (!users.some(u => u.email && u.email.toLowerCase() === verifiedUser.email.toLowerCase())) {
-          users.push(verifiedUser);
-          localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-        }
-      }
-
-      this.pendingLoginUser = null;
-      this.signinOtp = null;
-      this.completeVerifiedLogin(verifiedUser);
+      this.completeVerifiedLogin(user);
       return true;
     },
 
@@ -2104,7 +1992,6 @@
       }
 
       if (DOM.signinCredentialsStep) DOM.signinCredentialsStep.classList.remove('hidden');
-      if (DOM.signinOtpStep) DOM.signinOtpStep.classList.add('hidden');
 
       syncStateToForm();
       ReceiptRenderer.render();
@@ -4616,33 +4503,10 @@
       });
     }
 
-    // Sign-In Email & OTP Listeners
+    // Sign-In Email Listeners
     if (DOM.splashEmail) {
       DOM.splashEmail.addEventListener('input', () => {
         showInlineError(DOM.splashEmailError, DOM.splashEmailErrorText, '');
-      });
-    }
-    if (DOM.btnSigninOtpBack) {
-      DOM.btnSigninOtpBack.addEventListener('click', () => {
-        AuthService.clearSigninOtpTimers();
-        if (DOM.signinOtpStep) DOM.signinOtpStep.classList.add('hidden');
-        if (DOM.signinCredentialsStep) DOM.signinCredentialsStep.classList.remove('hidden');
-        CaptchaService.refreshSignin();
-      });
-    }
-    if (DOM.btnSigninResendOtp) {
-      DOM.btnSigninResendOtp.addEventListener('click', () => AuthService.resendSigninOtp());
-    }
-    if (DOM.btnSigninVerifyOtp) {
-      DOM.btnSigninVerifyOtp.addEventListener('click', () => AuthService.verifySigninOtp());
-    }
-    if (DOM.signinOtpInput) {
-      DOM.signinOtpInput.addEventListener('input', () => showInlineError(DOM.signinOtpError, null, ''));
-      DOM.signinOtpInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          AuthService.verifySigninOtp();
-        }
       });
     }
     if (DOM.regOwnerEmail) {
