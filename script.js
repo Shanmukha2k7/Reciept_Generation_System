@@ -112,7 +112,57 @@
     SESSION: 'BILLBUDDY_SESSION',
     CATALOG: 'BILLBUDDY_CATALOG',
     QR_CONFIG: 'BILLBUDDY_QR_CONFIG',
-    SERVER_DB: 'BILLBUDDY_SERVER_DB'
+    SERVER_DB: 'BILLBUDDY_SERVER_DB',
+    BILL_FORMAT: 'BILLBUDDY_BILL_FORMAT'
+  };
+
+  // Standard Default Bill Sample & Format
+  const DEFAULT_BILL_FORMAT = {
+    fontFamily: 'mono', // 'mono', 'dotmatrix', 'sans', 'serif'
+    headerFontSize: 18,
+    bodyFontSize: 12,
+    textAlign: 'center',
+    barcodePos: 'bottom', // 'bottom', 'top', 'hidden'
+    showLogo: true,
+    showTax: true,
+    customTagline: '',
+    customFooter: ''
+  };
+
+  const DEFAULT_BILL_DATA = {
+    store: {
+      name: 'Apex Tech Mart',
+      taxId: 'GSTIN: 29AABCU9603R1ZM',
+      address: 'Plot 42, Silicon Square, Bengaluru',
+      phone: '+91 98765 43210'
+    },
+    customer: {
+      name: 'John Doe',
+      contact: '+91 98765 12345'
+    },
+    items: [
+      { id: 'item-1', name: 'Wireless Bluetooth Earbuds Pro', price: 2499, qty: 1, total: 2499 },
+      { id: 'item-2', name: 'USB-C Fast Charging Cable 65W', price: 499, qty: 2, total: 998 },
+      { id: 'item-3', name: 'Ultra-thin Phone Case Matte', price: 299, qty: 1, total: 299 }
+    ],
+    billing: {
+      subtotal: 3796,
+      discountType: 'percent',
+      discountValue: 10,
+      discountAmount: 379.60,
+      taxableAmount: 3416.40,
+      taxRate: 18,
+      taxAmount: 614.95,
+      grandTotal: 4031.35
+    },
+    meta: {
+      receiptNumber: 'REC-DEFAULT-001',
+      dateTime: new Date().toISOString(),
+      cashierName: 'Store Staff',
+      paymentMode: 'UPI QR',
+      paymentStatus: 'PAID',
+      notes: 'Thank you for shopping with us! Visit again.'
+    }
   };
 
   // ============================================================================
@@ -135,6 +185,7 @@
       notes: 'Scan with any UPI App: GPay, PhonePe, Paytm, BHIM',
       customQrImage: null
     },
+    billFormat: JSON.parse(JSON.stringify(DEFAULT_BILL_FORMAT)),
     customer: {
       name: 'Walk-in Customer',
       contact: ''
@@ -162,7 +213,6 @@
     }
   };
 
-  let splashCaptchaCode = '';
   let productBarChartInstance = null;
   let productPieChartInstance = null;
   let presentationChartInstance = null;
@@ -185,6 +235,68 @@
     splashPanelForgot: document.getElementById('splash-panel-forgot'),
     btnForgotBackToSignin: document.getElementById('btn-forgot-back-to-signin'),
 
+    // Sign-In Anti-Bot Captcha & Google
+    signinCaptchaCanvas: document.getElementById('signin-captcha-canvas'),
+    btnRefreshSigninCaptcha: document.getElementById('btn-refresh-signin-captcha'),
+    signinCaptchaInput: document.getElementById('signin-captcha-input'),
+    btnGoogleSignin: document.getElementById('btn-google-signin'),
+    btnGoogleSignup: document.getElementById('btn-google-signup'),
+    googleAuthModal: document.getElementById('google-auth-modal'),
+    btnCloseGoogleModal: document.getElementById('btn-close-google-modal'),
+    googleAccountChoices: document.querySelectorAll('.google-account-choice'),
+
+    // Owner Registration Wizard Stepper & Steps
+    stepIndicator1: document.getElementById('step-indicator-1'),
+    stepIndicator2: document.getElementById('step-indicator-2'),
+    stepIndicator3: document.getElementById('step-indicator-3'),
+    stepIndicator4: document.getElementById('step-indicator-4'),
+    wizardStep1: document.getElementById('wizard-step-1'),
+    wizardStep2: document.getElementById('wizard-step-2'),
+    wizardStep3: document.getElementById('wizard-step-3'),
+    wizardStep4: document.getElementById('wizard-step-4'),
+    btnWizardStep1Next: document.getElementById('btn-wizard-step-1-next'),
+    btnWizardStep2Back: document.getElementById('btn-wizard-step-2-back'),
+    btnWizardStep2Next: document.getElementById('btn-wizard-step-2-next'),
+    btnWizardStep3Back: document.getElementById('btn-wizard-step-3-back'),
+    btnWizardStep3Next: document.getElementById('btn-wizard-step-3-next'),
+    btnWizardStep4Back: document.getElementById('btn-wizard-step-4-back'),
+    btnSubmitOwnerRegister: document.getElementById('btn-submit-owner-register'),
+
+    // Owner Custom User ID & Profile Fields
+    regOwnerName: document.getElementById('reg-owner-name'),
+    regOwnerId: document.getElementById('reg-owner-id'),
+    ownerIdStatus: document.getElementById('owner-id-status'),
+    ownerIdSuggestionsContainer: document.getElementById('owner-id-suggestions-container'),
+    ownerIdSuggestionsList: document.getElementById('owner-id-suggestions-list'),
+    regOwnerEmail: document.getElementById('reg-owner-email'),
+    regOwnerPassword: document.getElementById('reg-owner-password'),
+    regStoreName: document.getElementById('reg-store-name'),
+    regStoreTax: document.getElementById('reg-store-tax'),
+    regStoreAddress: document.getElementById('reg-store-address'),
+    regStorePhone: document.getElementById('reg-store-phone'),
+    regStoreUpi: document.getElementById('reg-store-upi'),
+    regStoreMerchant: document.getElementById('reg-store-merchant'),
+    regStoreNotes: document.getElementById('reg-store-notes'),
+
+    // Owner Step 4 Captcha & Email OTP
+    registerCaptchaCanvas: document.getElementById('register-captcha-canvas'),
+    btnRefreshRegisterCaptcha: document.getElementById('btn-refresh-register-captcha'),
+    registerCaptchaInput: document.getElementById('register-captcha-input'),
+    btnRegisterSendOtp: document.getElementById('btn-register-send-otp'),
+    registerOtpSimAlert: document.getElementById('register-otp-sim-alert'),
+    registerTargetEmailDisplay: document.getElementById('register-target-email-display'),
+    registerSimulatedOtpCode: document.getElementById('register-simulated-otp-code'),
+    registerOtpInput: document.getElementById('register-otp-input'),
+    registerOtpCountdown: document.getElementById('register-otp-countdown'),
+    btnRegisterResendOtp: document.getElementById('btn-register-resend-otp'),
+
+    // Account Created Successfully Modal
+    ownerCreatedSuccessModal: document.getElementById('owner-created-success-modal'),
+    createdOwnerIdDisplay: document.getElementById('created-owner-id-display'),
+    createdStoreNameDisplay: document.getElementById('created-store-name-display'),
+    btnEnterOwnerConsole: document.getElementById('btn-enter-owner-console'),
+
+    // Forgot Password Fields
     forgotStep1: document.getElementById('forgot-step-1'),
     forgotAdminEmail: document.getElementById('forgot-admin-email'),
     forgotCaptchaCanvas: document.getElementById('forgot-captcha-canvas'),
@@ -204,19 +316,6 @@
     forgotNewPassword: document.getElementById('forgot-new-password'),
     forgotConfirmPassword: document.getElementById('forgot-confirm-password'),
     btnSubmitNewPassword: document.getElementById('btn-submit-new-password'),
-
-    // Admin Self-Registration Fields
-    regAdminName: document.getElementById('reg-admin-name'),
-    regAdminId: document.getElementById('reg-admin-id'),
-    btnAutoAdminId: document.getElementById('btn-auto-admin-id'),
-    regAdminEmail: document.getElementById('reg-admin-email'),
-    regAdminPassword: document.getElementById('reg-admin-password'),
-    regStoreName: document.getElementById('reg-store-name'),
-    regStoreAddress: document.getElementById('reg-store-address'),
-    regStoreTax: document.getElementById('reg-store-tax'),
-    regStorePhone: document.getElementById('reg-store-phone'),
-    regStoreUpi: document.getElementById('reg-store-upi'),
-    btnSubmitAdminRegister: document.getElementById('btn-submit-admin-register'),
 
     // Top Header
     headerRoleBadge: document.getElementById('header-role-badge'),
@@ -357,8 +456,9 @@
     btnCompleteAndUnlock: document.getElementById('btn-complete-and-unlock'),
     pvPaymentDetails: document.getElementById('pv-payment-details'),
 
-    // Admin Panels & Tabs
+    // Owner Panels & Tabs
     adminNavCompany: document.getElementById('admin-nav-company'),
+    adminNavBillFormat: document.getElementById('admin-nav-bill-format'),
     adminNavProducts: document.getElementById('admin-nav-products'),
     adminNavCatalog: document.getElementById('admin-nav-catalog'),
     adminNavQrcode: document.getElementById('admin-nav-qrcode'),
@@ -368,6 +468,7 @@
     adminNavDanger: document.getElementById('admin-nav-danger'),
 
     adminPanelCompany: document.getElementById('admin-panel-company'),
+    adminPanelBillFormat: document.getElementById('admin-panel-bill-format'),
     adminPanelProducts: document.getElementById('admin-panel-products'),
     adminPanelCatalog: document.getElementById('admin-panel-catalog'),
     adminPanelQrcode: document.getElementById('admin-panel-qrcode'),
@@ -375,6 +476,27 @@
     adminPanelAnalytics: document.getElementById('admin-panel-analytics'),
     adminPanelServer: document.getElementById('admin-panel-server'),
     adminPanelDanger: document.getElementById('admin-panel-danger'),
+
+    // Bill Designer & Autonomous Local AI
+    aiBillPrompt: document.getElementById('ai-bill-prompt'),
+    btnRunAiFormatter: document.getElementById('btn-run-ai-formatter'),
+    aiBillLogContainer: document.getElementById('ai-bill-log-container'),
+    aiStatusIndicator: document.getElementById('ai-status-indicator'),
+    btnAiQuickPresets: document.querySelectorAll('.btn-ai-quick-preset'),
+    formatFontFamily: document.getElementById('format-font-family'),
+    formatTextAlign: document.getElementById('format-text-align'),
+    formatHeaderSize: document.getElementById('format-header-size'),
+    formatHeaderSizeVal: document.getElementById('format-header-size-val'),
+    formatBodySize: document.getElementById('format-body-size'),
+    formatBodySizeVal: document.getElementById('format-body-size-val'),
+    formatBarcodePos: document.getElementById('format-barcode-pos'),
+    formatShowLogo: document.getElementById('format-show-logo'),
+    formatShowTax: document.getElementById('format-show-tax'),
+    formatCustomTagline: document.getElementById('format-custom-tagline'),
+    formatCustomFooter: document.getElementById('format-custom-footer'),
+    btnSaveBillFormat: document.getElementById('btn-save-bill-format'),
+    btnResetBillFormat: document.getElementById('btn-reset-bill-format'),
+    billDesignerPreviewPaper: document.getElementById('bill-designer-preview-paper'),
 
     // Admin Danger Zone / Purge Data Controls
     btnClearStoreSales: document.getElementById('btn-clear-store-sales'),
@@ -575,9 +697,26 @@
       return code;
     },
 
+    signinCaptchaCode: '',
+    registerCaptchaCode: '',
+
+    refreshSignin() {
+      if (DOM.signinCaptchaCanvas) {
+        this.signinCaptchaCode = this.generate(DOM.signinCaptchaCanvas);
+      }
+      if (DOM.signinCaptchaInput) DOM.signinCaptchaInput.value = '';
+    },
+
+    refreshRegister() {
+      if (DOM.registerCaptchaCanvas) {
+        this.registerCaptchaCode = this.generate(DOM.registerCaptchaCanvas);
+      }
+      if (DOM.registerCaptchaInput) DOM.registerCaptchaInput.value = '';
+    },
+
     refreshSplash() {
-      splashCaptchaCode = this.generate(DOM.splashCaptchaCanvas);
-      DOM.splashCaptchaInput.value = '';
+      this.refreshSignin();
+      this.refreshRegister();
     }
   };
 
@@ -848,6 +987,471 @@
   };
 
   // ============================================================================
+  // 6c. OWNER USER ID AVAILABILITY & INSTAGRAM-STYLE SUGGESTIONS
+  // ============================================================================
+  const OwnerIdService = {
+    available: false,
+    currentCheck: '',
+
+    checkAvailability(rawId) {
+      const cleanId = (rawId || '').trim().replace(/^@+/, '').toUpperCase();
+      if (!cleanId) {
+        if (DOM.ownerIdStatus) {
+          DOM.ownerIdStatus.textContent = '';
+          DOM.ownerIdStatus.className = 'text-[11px] font-bold text-slate-500 font-mono';
+        }
+        if (DOM.ownerIdSuggestionsContainer) DOM.ownerIdSuggestionsContainer.classList.add('hidden');
+        this.available = false;
+        return;
+      }
+
+      this.currentCheck = cleanId;
+      const users = AuthService.getUsers();
+      const isTaken = users.some(u => 
+        (u.workerId && u.workerId.toUpperCase() === cleanId) ||
+        (u.name && u.name.toUpperCase() === cleanId)
+      );
+
+      if (isTaken) {
+        this.available = false;
+        if (DOM.ownerIdStatus) {
+          DOM.ownerIdStatus.textContent = '✕ Already Taken';
+          DOM.ownerIdStatus.className = 'text-[11px] font-bold text-rose-600 font-mono';
+        }
+        const suggestions = this.generateSuggestions(cleanId, users);
+        this.renderSuggestions(suggestions);
+      } else {
+        this.available = true;
+        if (DOM.ownerIdStatus) {
+          DOM.ownerIdStatus.textContent = '✓ Available';
+          DOM.ownerIdStatus.className = 'text-[11px] font-bold text-emerald-600 font-mono';
+        }
+        if (DOM.ownerIdSuggestionsContainer) DOM.ownerIdSuggestionsContainer.classList.add('hidden');
+      }
+    },
+
+    generateSuggestions(baseId, users) {
+      const clean = baseId.toLowerCase().replace(/[^a-z0-9_]/g, '');
+      const candidates = [
+        `${clean}_1`,
+        `${clean}_store`,
+        `${clean}_official`,
+        `real_${clean}`,
+        `${clean}_2026`,
+        `${clean}_pos`
+      ];
+      return candidates.filter(cand => 
+        !users.some(u => u.workerId && u.workerId.toUpperCase() === cand.toUpperCase())
+      ).slice(0, 4);
+    },
+
+    renderSuggestions(suggestions) {
+      if (!DOM.ownerIdSuggestionsContainer || !DOM.ownerIdSuggestionsList) return;
+      DOM.ownerIdSuggestionsList.innerHTML = '';
+      if (suggestions.length === 0) {
+        DOM.ownerIdSuggestionsContainer.classList.add('hidden');
+        return;
+      }
+
+      suggestions.forEach(cand => {
+        const pill = document.createElement('button');
+        pill.type = 'button';
+        pill.className = 'id-suggestion-pill';
+        pill.innerHTML = `<i class="fa-solid fa-at text-[10px]"></i><span>${cand}</span>`;
+        pill.addEventListener('click', () => {
+          if (DOM.regOwnerId) {
+            DOM.regOwnerId.value = cand.toUpperCase();
+            OwnerIdService.checkAvailability(cand);
+          }
+        });
+        DOM.ownerIdSuggestionsList.appendChild(pill);
+      });
+
+      DOM.ownerIdSuggestionsContainer.classList.remove('hidden');
+    }
+  };
+
+  // ============================================================================
+  // 6d. STORE OWNER 4-STEP ONBOARDING WIZARD SERVICE
+  // ============================================================================
+  const OwnerWizardService = {
+    currentStep: 1,
+    state: {
+      ownerName: '',
+      ownerId: '',
+      email: '',
+      password: '',
+      storeName: '',
+      storeTax: '',
+      storeAddress: '',
+      storePhone: '',
+      storeUpi: '',
+      storeMerchant: '',
+      storeNotes: '',
+      otp: '',
+      otpExpiresAt: 0,
+      otpVerified: false
+    },
+    countdownTimer: null,
+    resendTimer: null,
+
+    goToStep(step) {
+      if (step < 1 || step > 4) return;
+      this.currentStep = step;
+
+      // Toggle views
+      if (DOM.wizardStep1) DOM.wizardStep1.classList.toggle('hidden', step !== 1);
+      if (DOM.wizardStep2) DOM.wizardStep2.classList.toggle('hidden', step !== 2);
+      if (DOM.wizardStep3) DOM.wizardStep3.classList.toggle('hidden', step !== 3);
+      if (DOM.wizardStep4) DOM.wizardStep4.classList.toggle('hidden', step !== 4);
+
+      // Update stepper circle classes
+      [1, 2, 3, 4].forEach(i => {
+        const indicator = DOM[`stepIndicator${i}`];
+        if (!indicator) return;
+        indicator.classList.remove('wizard-step-active', 'wizard-step-completed', 'wizard-step-pending');
+        if (i === step) {
+          indicator.classList.add('wizard-step-active');
+        } else if (i < step) {
+          indicator.classList.add('wizard-step-completed');
+        } else {
+          indicator.classList.add('wizard-step-pending');
+        }
+      });
+
+      if (step === 4) {
+        CaptchaService.refreshRegister();
+      }
+    },
+
+    validateStep1() {
+      const name = (DOM.regOwnerName.value || '').trim();
+      const id = (DOM.regOwnerId.value || '').trim().replace(/^@+/, '').toUpperCase();
+      const email = (DOM.regOwnerEmail.value || '').trim().toLowerCase();
+      const password = DOM.regOwnerPassword.value || '';
+
+      if (!name || name.length < 2) {
+        Toast.show('Please enter your full name', 'warning');
+        return false;
+      }
+      if (!id || id.length < 2) {
+        Toast.show('Please enter a custom Owner ID', 'warning');
+        return false;
+      }
+      const users = AuthService.getUsers();
+      if (users.some(u => u.workerId && u.workerId.toUpperCase() === id)) {
+        Toast.show(`Owner ID "@${id}" is already taken! Please choose an alternative.`, 'error');
+        OwnerIdService.checkAvailability(id);
+        return false;
+      }
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        Toast.show('Please enter a valid login email address', 'warning');
+        return false;
+      }
+      if (users.some(u => u.email && u.email.toLowerCase() === email)) {
+        Toast.show('An account with this email address already exists', 'error');
+        return false;
+      }
+      if (!password || password.length < 6) {
+        Toast.show('Password must be at least 6 characters long', 'warning');
+        return false;
+      }
+
+      this.state.ownerName = name;
+      this.state.ownerId = id;
+      this.state.email = email;
+      this.state.password = password;
+      return true;
+    },
+
+    validateStep2() {
+      const storeName = (DOM.regStoreName.value || '').trim();
+      const storeAddress = (DOM.regStoreAddress.value || '').trim();
+      const storeTax = (DOM.regStoreTax.value || '').trim() || 'GSTIN-PENDING';
+      const storePhone = (DOM.regStorePhone.value || '').trim() || '+91 98765 00000';
+
+      if (!storeName || storeName.length < 2) {
+        Toast.show('Please enter your Store / Business Name', 'warning');
+        return false;
+      }
+      if (!storeAddress || storeAddress.length < 2) {
+        Toast.show('Please enter your store address', 'warning');
+        return false;
+      }
+
+      this.state.storeName = storeName;
+      this.state.storeTax = storeTax;
+      this.state.storeAddress = storeAddress;
+      this.state.storePhone = storePhone;
+      return true;
+    },
+
+    validateStep3() {
+      const upi = (DOM.regStoreUpi.value || '').trim();
+      const merchant = (DOM.regStoreMerchant.value || '').trim() || this.state.storeName;
+      const notes = (DOM.regStoreNotes.value || '').trim() || 'Thank you for shopping with us! Visit again.';
+
+      if (!upi || !upi.includes('@')) {
+        Toast.show('Please enter a valid UPI VPA (e.g. storename@upi)', 'warning');
+        return false;
+      }
+
+      this.state.storeUpi = upi;
+      this.state.storeMerchant = merchant;
+      this.state.storeNotes = notes;
+      return true;
+    },
+
+    sendOtp() {
+      const captchaInput = (DOM.registerCaptchaInput.value || '').trim();
+      if (!captchaInput) {
+        Toast.show('Please enter the captcha verification code first', 'warning');
+        return false;
+      }
+
+      if (captchaInput.toUpperCase() !== (CaptchaService.registerCaptchaCode || '').toUpperCase()) {
+        Toast.show('Invalid captcha verification code! Please try again.', 'error');
+        CaptchaService.refreshRegister();
+        return false;
+      }
+
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      this.state.otp = otp;
+      this.state.otpExpiresAt = Date.now() + 5 * 60 * 1000;
+      this.state.otpVerified = false;
+
+      if (DOM.registerTargetEmailDisplay) DOM.registerTargetEmailDisplay.textContent = this.state.email;
+      if (DOM.registerSimulatedOtpCode) DOM.registerSimulatedOtpCode.textContent = otp;
+      if (DOM.registerOtpSimAlert) DOM.registerOtpSimAlert.classList.remove('hidden');
+      if (DOM.registerOtpInput) {
+        DOM.registerOtpInput.value = '';
+        DOM.registerOtpInput.focus();
+      }
+
+      this.startTimers();
+      Toast.show(`Security OTP dispatched to ${this.state.email}! (Demo: ${otp})`, 'success');
+      if (window.confetti) confetti({ particleCount: 30, spread: 50, origin: { y: 0.6 } });
+      return true;
+    },
+
+    resendOtp() {
+      if (!this.state.email) return;
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      this.state.otp = otp;
+      this.state.otpExpiresAt = Date.now() + 5 * 60 * 1000;
+      if (DOM.registerSimulatedOtpCode) DOM.registerSimulatedOtpCode.textContent = otp;
+      this.startTimers();
+      Toast.show(`New OTP dispatched to ${this.state.email}! (Demo: ${otp})`, 'info');
+    },
+
+    startTimers() {
+      this.clearTimers();
+      const updateCountdown = () => {
+        const remainingMs = Math.max(0, this.state.otpExpiresAt - Date.now());
+        const totalSec = Math.floor(remainingMs / 1000);
+        const mm = String(Math.floor(totalSec / 60)).padStart(2, '0');
+        const ss = String(totalSec % 60).padStart(2, '0');
+        if (DOM.registerOtpCountdown) DOM.registerOtpCountdown.textContent = `${mm}:${ss}`;
+        if (totalSec <= 0) {
+          clearInterval(this.countdownTimer);
+          if (DOM.registerOtpCountdown) DOM.registerOtpCountdown.textContent = 'EXPIRED';
+        }
+      };
+      updateCountdown();
+      this.countdownTimer = setInterval(updateCountdown, 1000);
+
+      let resendSec = 30;
+      if (DOM.btnRegisterResendOtp) {
+        DOM.btnRegisterResendOtp.disabled = true;
+        DOM.btnRegisterResendOtp.textContent = `Resend in ${resendSec}s`;
+      }
+      this.resendTimer = setInterval(() => {
+        resendSec--;
+        if (resendSec <= 0) {
+          clearInterval(this.resendTimer);
+          if (DOM.btnRegisterResendOtp) {
+            DOM.btnRegisterResendOtp.disabled = false;
+            DOM.btnRegisterResendOtp.textContent = 'Resend OTP';
+          }
+        } else {
+          if (DOM.btnRegisterResendOtp) {
+            DOM.btnRegisterResendOtp.textContent = `Resend in ${resendSec}s`;
+          }
+        }
+      }, 1000);
+    },
+
+    clearTimers() {
+      if (this.countdownTimer) clearInterval(this.countdownTimer);
+      if (this.resendTimer) clearInterval(this.resendTimer);
+      this.countdownTimer = null;
+      this.resendTimer = null;
+    },
+
+    submitRegistration() {
+      if (!this.state.otp) {
+        Toast.show('Please click "Send 6-Digit Verification OTP" first', 'warning');
+        return false;
+      }
+
+      if (Date.now() > this.state.otpExpiresAt) {
+        Toast.show('OTP verification code has expired! Please request a new OTP.', 'error');
+        return false;
+      }
+
+      const enteredOtp = (DOM.registerOtpInput.value || '').trim();
+      if (!enteredOtp || enteredOtp.length !== 6) {
+        Toast.show('Please enter the full 6-digit OTP code', 'warning');
+        return false;
+      }
+
+      if (enteredOtp !== this.state.otp) {
+        Toast.show('Incorrect OTP code! Please verify the 6 digits and try again.', 'error');
+        return false;
+      }
+
+      // Provision new Store Owner
+      const users = AuthService.getUsers();
+      const newOwner = {
+        workerId: this.state.ownerId,
+        adminId: this.state.ownerId,
+        name: this.state.ownerName,
+        email: this.state.email,
+        role: 'owner',
+        passwordHash: sha256(this.state.password),
+        createdAt: new Date().toISOString(),
+        store: {
+          name: this.state.storeName,
+          taxId: this.state.storeTax,
+          address: this.state.storeAddress,
+          phone: this.state.storePhone,
+          logo: null
+        },
+        qrConfig: {
+          upiId: this.state.storeUpi,
+          merchantName: this.state.storeMerchant || this.state.storeName,
+          notes: 'Scan with any UPI App: GPay, PhonePe, Paytm, BHIM',
+          customQrImage: null
+        }
+      };
+
+      users.push(newOwner);
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+
+      // Active session for the newly created owner
+      AppState.currentUser = {
+        workerId: newOwner.workerId,
+        adminId: newOwner.adminId,
+        name: newOwner.name,
+        email: newOwner.email,
+        role: newOwner.role
+      };
+      AppState.store = JSON.parse(JSON.stringify(newOwner.store));
+      AppState.qrConfig = JSON.parse(JSON.stringify(newOwner.qrConfig));
+      localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(AppState.currentUser));
+
+      this.clearTimers();
+
+      // Show celebratory modal
+      if (DOM.createdOwnerIdDisplay) DOM.createdOwnerIdDisplay.textContent = `@${newOwner.workerId}`;
+      if (DOM.createdStoreNameDisplay) DOM.createdStoreNameDisplay.textContent = newOwner.store.name;
+      if (DOM.ownerCreatedSuccessModal) DOM.ownerCreatedSuccessModal.classList.remove('hidden');
+
+      if (window.confetti) {
+        confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 } });
+      }
+
+      Toast.show(`Account Created Successfully! Welcome, ${newOwner.name}! 🎉`, 'success');
+      return true;
+    }
+  };
+
+  // ============================================================================
+  // 6e. GOOGLE ONE-CLICK AUTHENTICATION SERVICE (SIMULATOR)
+  // ============================================================================
+  const GoogleAuthService = {
+    mode: 'signin', // 'signin' or 'signup'
+
+    openModal(mode = 'signin') {
+      this.mode = mode;
+      if (DOM.googleAuthModal) DOM.googleAuthModal.classList.remove('hidden');
+    },
+
+    closeModal() {
+      if (DOM.googleAuthModal) DOM.googleAuthModal.classList.add('hidden');
+    },
+
+    selectAccount(name, email) {
+      this.closeModal();
+
+      if (this.mode === 'signup') {
+        // Auto-fill wizard step 1
+        if (DOM.regOwnerName) DOM.regOwnerName.value = name;
+        if (DOM.regOwnerEmail) DOM.regOwnerEmail.value = email;
+        const cleanId = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_').toUpperCase();
+        if (DOM.regOwnerId) {
+          DOM.regOwnerId.value = cleanId;
+          OwnerIdService.checkAvailability(cleanId);
+        }
+        if (DOM.regOwnerPassword && !DOM.regOwnerPassword.value) {
+          DOM.regOwnerPassword.value = 'Google@2026';
+        }
+        Toast.show(`Google account "${email}" linked! Complete your store details.`, 'info');
+      } else {
+        // Check if user exists or log in demo
+        const users = AuthService.getUsers();
+        let user = users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
+        if (!user) {
+          // Auto-provision demo owner
+          const id = email.split('@')[0].toUpperCase();
+          user = {
+            workerId: id,
+            adminId: id,
+            name: name,
+            email: email,
+            role: 'owner',
+            passwordHash: sha256('Google@2026'),
+            store: {
+              name: `${name}'s Store`,
+              taxId: 'GSTIN-GOOGLE-VERIFIED',
+              address: 'Main Commerce Hub, Tech City',
+              phone: '+91 98765 00000',
+              logo: null
+            },
+            qrConfig: {
+              upiId: `${id.toLowerCase()}@okaxis`,
+              merchantName: name,
+              notes: 'Google Pay Verified Merchant',
+              customQrImage: null
+            }
+          };
+          users.push(user);
+          localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+        }
+
+        AppState.currentUser = {
+          workerId: user.workerId,
+          adminId: user.adminId || user.workerId,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        };
+        AppState.store = JSON.parse(JSON.stringify(user.store || AppState.store));
+        AppState.qrConfig = JSON.parse(JSON.stringify(user.qrConfig || AppState.qrConfig));
+        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(AppState.currentUser));
+
+        syncStateToForm();
+        ReceiptRenderer.render();
+
+        if (DOM.splashAuthOverlay) DOM.splashAuthOverlay.classList.add('hidden');
+        AuthService.applyUserInterface();
+        Toast.show(`Signed in with Google as ${user.name}!`, 'success');
+        if (window.confetti) confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+      }
+    }
+  };
+
+  // ============================================================================
   // 7. USER AUTHENTICATION & STRICT ROLE ENFORCEMENT (Multi-Admin / Multi-Store)
   // ============================================================================
   const AuthService = {
@@ -928,6 +1532,8 @@
       if (DOM.splashPanelSignin) DOM.splashPanelSignin.classList.remove('hidden');
       if (DOM.splashPanelRegister) DOM.splashPanelRegister.classList.add('hidden');
       if (typeof ForgotService !== 'undefined') ForgotService.clearTimers();
+      if (typeof OwnerWizardService !== 'undefined') OwnerWizardService.clearTimers();
+      if (typeof CaptchaService !== 'undefined') CaptchaService.refreshSplash();
       if (DOM.btnSplashTabSignin && DOM.btnSplashTabRegister) {
         DOM.btnSplashTabSignin.className = 'flex-1 py-2.5 px-3 rounded-xl bg-white text-slate-900 shadow-sm transition-all flex items-center justify-center gap-2 font-bold';
         DOM.btnSplashTabRegister.className = 'flex-1 py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-2 font-semibold';
@@ -948,10 +1554,11 @@
 
     login(identifierInput, passwordInput) {
       const rawId = (identifierInput || '').trim();
+      const cleanId = rawId.replace(/^@+/, '');
       const lowerId = rawId.toLowerCase();
 
       if (!rawId) {
-        Toast.show('Please enter your Worker ID or Email address', 'warning');
+        Toast.show('Please enter your Email address or User ID', 'warning');
         return false;
       }
 
@@ -960,10 +1567,23 @@
         return false;
       }
 
+      // Check anti-bot captcha
+      const captchaInput = (DOM.signinCaptchaInput ? DOM.signinCaptchaInput.value : '').trim();
+      if (!captchaInput) {
+        Toast.show('Please enter the captcha verification code', 'warning');
+        return false;
+      }
+
+      if (captchaInput.toUpperCase() !== (CaptchaService.signinCaptchaCode || '').toUpperCase()) {
+        Toast.show('Incorrect captcha code! Please try again.', 'error');
+        CaptchaService.refreshSignin();
+        return false;
+      }
+
       const users = this.getUsers();
-      // Supports login via EITHER Worker ID (e.g. WRK-101, ADM-001) OR Email address
+      // Supports login via User ID / Handle (e.g. @alex, OWN-001, WRK-101) OR Email address
       const user = users.find(u => 
-        (u.workerId && u.workerId.toUpperCase() === rawId.toUpperCase()) ||
+        (u.workerId && (u.workerId.toUpperCase() === rawId.toUpperCase() || u.workerId.toUpperCase() === cleanId.toUpperCase())) ||
         (u.email && (
           u.email.toLowerCase() === lowerId ||
           u.email.toLowerCase().replace('@billbuddy.com', '@smartreceipt.com') === lowerId ||
@@ -972,7 +1592,7 @@
       );
 
       if (!user) {
-        Toast.show('No staff or admin account found with this ID / Email.', 'error');
+        Toast.show('No account found matching this User ID / Email.', 'error');
         return false;
       }
 
@@ -981,28 +1601,30 @@
         return false;
       }
 
-      // Session established with adminId linking
+      const isOwner = user.role === 'owner' || user.role === 'admin';
+
+      // Session established
       AppState.currentUser = {
-        workerId: user.workerId || (user.role === 'admin' ? 'ADM-001' : 'WRK-100'),
-        adminId: user.role === 'admin' ? (user.adminId || user.workerId) : (user.adminId || 'ADM-001'),
+        workerId: user.workerId || (isOwner ? 'OWN-001' : 'WRK-100'),
+        adminId: isOwner ? (user.adminId || user.workerId) : (user.adminId || 'OWN-001'),
         name: user.name,
         email: user.email,
         role: user.role
       };
       localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(AppState.currentUser));
 
-      // Load store profile and QR code based on user role and admin association
-      if (user.role === 'admin') {
+      // Load store profile and QR code based on user role and owner association
+      if (isOwner) {
         if (user.store) AppState.store = JSON.parse(JSON.stringify(user.store));
         if (user.qrConfig) AppState.qrConfig = JSON.parse(JSON.stringify(user.qrConfig));
       } else {
-        // Cashier/Worker: Inherit store identity and QR code from their respective Admin
-        const myAdmin = users.find(u => u.role === 'admin' && (u.adminId === user.adminId || u.workerId === user.adminId));
-        if (myAdmin && myAdmin.store) {
-          AppState.store = JSON.parse(JSON.stringify(myAdmin.store));
+        // Cashier/Worker: Inherit store identity and QR code from their respective Owner
+        const myOwner = users.find(u => (u.role === 'owner' || u.role === 'admin') && (u.adminId === user.adminId || u.workerId === user.adminId));
+        if (myOwner && myOwner.store) {
+          AppState.store = JSON.parse(JSON.stringify(myOwner.store));
         }
-        if (myAdmin && myAdmin.qrConfig) {
-          AppState.qrConfig = JSON.parse(JSON.stringify(myAdmin.qrConfig));
+        if (myOwner && myOwner.qrConfig) {
+          AppState.qrConfig = JSON.parse(JSON.stringify(myOwner.qrConfig));
         }
       }
 
@@ -1011,7 +1633,7 @@
 
       DOM.splashAuthOverlay.classList.add('hidden');
       this.applyUserInterface();
-      Toast.show(`Welcome, ${user.name}! (${user.workerId || user.role.toUpperCase()})`, 'success');
+      Toast.show(`Welcome, ${user.name}! (@${user.workerId})`, 'success');
       return true;
     },
 
@@ -1141,31 +1763,34 @@
       const user = AppState.currentUser;
       if (!user) return;
 
-      if (user.role === 'admin') {
-        // ADMIN MODE:
-        // Admin is taken directly to Admin Portal.
-        // Worker POS is completely hidden. Admin does NOT bill or make payments.
+      const isOwner = user.role === 'owner' || user.role === 'admin';
+
+      if (isOwner) {
+        // OWNER MODE:
+        // Owner is taken directly to Owner Portal.
+        // Worker POS is completely hidden. Owner does NOT bill or make payments.
         DOM.viewWorker.classList.add('hidden');
         DOM.viewAdmin.classList.remove('hidden');
 
-        DOM.headerUserWelcome.textContent = `Administrator: ${user.name} (${user.workerId})`;
-        DOM.headerRoleBadge.textContent = 'Admin Executive Portal';
+        DOM.headerUserWelcome.textContent = `Store Owner: ${user.name} (@${user.workerId})`;
+        DOM.headerRoleBadge.textContent = 'STORE OWNER';
         DOM.headerRoleBadge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200';
 
         DOM.adminNavControls.classList.remove('hidden');
         DOM.adminNavControls.classList.add('flex');
         DOM.workerNavControls.classList.add('hidden');
 
-        // Render admin views scoped to this admin's workspace
+        // Render owner views scoped to this owner's workspace
         AdminModule.renderCompanySettings();
         AdminModule.renderMonthlyProductAnalytics();
         AdminModule.renderAdminCatalog();
         QrConfigService.renderAdminQrPreview();
         AdminModule.renderWorkerRoster();
+        if (typeof BillFormatService !== 'undefined') BillFormatService.render();
       } else {
         // WORKER MODE:
         // Worker is taken directly to Worker POS Billing.
-        // Admin Portal is completely hidden and inaccessible.
+        // Owner Portal is completely hidden and inaccessible.
         DOM.viewAdmin.classList.add('hidden');
         DOM.viewWorker.classList.remove('hidden');
 
@@ -2069,6 +2694,9 @@
       }
 
       DOM.pvReceiptNotes.textContent = AppState.meta.notes || 'Thank you for your purchase!';
+      if (typeof BillFormatService !== 'undefined') {
+        BillFormatService.applyFormatToLivePaper();
+      }
     },
 
     setFormat(mode) {
@@ -2088,6 +2716,450 @@
   };
 
   // ============================================================================
+  // 14b. BILL FORMAT SERVICE & AUTONOMOUS LOCAL AI FORMATTING ENGINE
+  // ============================================================================
+  const BillFormatService = {
+    init() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.BILL_FORMAT);
+        if (saved) {
+          AppState.billFormat = Object.assign({}, DEFAULT_BILL_FORMAT, JSON.parse(saved));
+        }
+      } catch {
+        AppState.billFormat = JSON.parse(JSON.stringify(DEFAULT_BILL_FORMAT));
+      }
+      this.syncControls();
+      this.applyFormatToLivePaper();
+    },
+
+    syncControls() {
+      const fmt = AppState.billFormat;
+      if (DOM.formatFontFamily) DOM.formatFontFamily.value = fmt.fontFamily || 'mono';
+      if (DOM.formatTextAlign) DOM.formatTextAlign.value = fmt.textAlign || 'center';
+      if (DOM.formatHeaderSize) DOM.formatHeaderSize.value = fmt.headerFontSize || 18;
+      if (DOM.formatHeaderSizeVal) DOM.formatHeaderSizeVal.textContent = `${fmt.headerFontSize || 18}px`;
+      if (DOM.formatBodySize) DOM.formatBodySize.value = fmt.bodyFontSize || 12;
+      if (DOM.formatBodySizeVal) DOM.formatBodySizeVal.textContent = `${fmt.bodyFontSize || 12}px`;
+      if (DOM.formatBarcodePos) DOM.formatBarcodePos.value = fmt.barcodePos || 'bottom';
+      if (DOM.formatShowLogo) DOM.formatShowLogo.value = String(fmt.showLogo !== false);
+      if (DOM.formatShowTax) DOM.formatShowTax.value = String(fmt.showTax !== false);
+      if (DOM.formatCustomTagline) DOM.formatCustomTagline.value = fmt.customTagline || '';
+      if (DOM.formatCustomFooter) DOM.formatCustomFooter.value = fmt.customFooter || '';
+    },
+
+    readControls() {
+      return {
+        fontFamily: DOM.formatFontFamily ? DOM.formatFontFamily.value : 'mono',
+        textAlign: DOM.formatTextAlign ? DOM.formatTextAlign.value : 'center',
+        headerFontSize: DOM.formatHeaderSize ? Number(DOM.formatHeaderSize.value) : 18,
+        bodyFontSize: DOM.formatBodySize ? Number(DOM.formatBodySize.value) : 12,
+        barcodePos: DOM.formatBarcodePos ? DOM.formatBarcodePos.value : 'bottom',
+        showLogo: DOM.formatShowLogo ? DOM.formatShowLogo.value === 'true' : true,
+        showTax: DOM.formatShowTax ? DOM.formatShowTax.value === 'true' : true,
+        customTagline: DOM.formatCustomTagline ? DOM.formatCustomTagline.value.trim() : '',
+        customFooter: DOM.formatCustomFooter ? DOM.formatCustomFooter.value.trim() : ''
+      };
+    },
+
+    save() {
+      AppState.billFormat = this.readControls();
+      localStorage.setItem(STORAGE_KEYS.BILL_FORMAT, JSON.stringify(AppState.billFormat));
+      this.applyFormatToLivePaper();
+      this.renderPreviewPaper();
+      Toast.show('Bill format settings saved successfully!', 'success');
+      if (window.confetti) confetti({ particleCount: 40, spread: 50, origin: { y: 0.6 } });
+    },
+
+    reset() {
+      AppState.billFormat = JSON.parse(JSON.stringify(DEFAULT_BILL_FORMAT));
+      localStorage.setItem(STORAGE_KEYS.BILL_FORMAT, JSON.stringify(AppState.billFormat));
+      this.syncControls();
+      this.applyFormatToLivePaper();
+      this.renderPreviewPaper();
+      Toast.show('Reset receipt format to factory standard.', 'info');
+    },
+
+    applyFormatToLivePaper() {
+      const fmt = AppState.billFormat;
+      const papers = [DOM.receiptPaper, DOM.billDesignerPreviewPaper].filter(Boolean);
+
+      papers.forEach(p => {
+        // Font Family
+        p.classList.remove('font-mono', 'font-sans', 'font-serif', 'font-dotmatrix');
+        if (fmt.fontFamily === 'sans') p.classList.add('font-sans');
+        else if (fmt.fontFamily === 'serif') p.classList.add('font-serif');
+        else if (fmt.fontFamily === 'dotmatrix') p.classList.add('font-dotmatrix');
+        else p.classList.add('font-mono');
+
+        // Font sizes and text alignment styles
+        p.style.fontSize = `${fmt.bodyFontSize || 12}px`;
+
+        const header = p.querySelector('.receipt-header') || p.querySelector('#pv-store-name')?.parentElement;
+        if (header) {
+          header.style.textAlign = fmt.textAlign || 'center';
+        }
+
+        const storeName = p.querySelector('#pv-store-name') || p.querySelector('.pv-preview-store-name');
+        if (storeName) {
+          storeName.style.fontSize = `${fmt.headerFontSize || 18}px`;
+        }
+
+        // Barcode position
+        const barcode = p.querySelector('.barcode-container');
+        if (barcode) {
+          if (fmt.barcodePos === 'hidden') {
+            barcode.classList.add('hidden');
+          } else if (fmt.barcodePos === 'top') {
+            barcode.classList.remove('hidden');
+            const meta = p.querySelector('.receipt-meta');
+            if (meta && barcode.nextElementSibling !== meta) {
+              p.insertBefore(barcode, meta);
+            }
+          } else {
+            // bottom
+            barcode.classList.remove('hidden');
+            const footer = p.querySelector('.receipt-footer');
+            if (footer && !footer.contains(barcode)) {
+              footer.insertBefore(barcode, footer.children[1] || null);
+            }
+          }
+        }
+
+        // Logo visibility
+        const logoContainer = p.querySelector('#pv-logo-container') || p.querySelector('.pv-preview-logo-container');
+        if (logoContainer) {
+          logoContainer.classList.toggle('hidden', !fmt.showLogo || !AppState.store.logo);
+        }
+      });
+    },
+
+    render() {
+      this.syncControls();
+      this.renderPreviewPaper();
+    },
+
+    renderPreviewPaper() {
+      if (!DOM.billDesignerPreviewPaper) return;
+      const fmt = AppState.billFormat;
+      const bill = DEFAULT_BILL_DATA;
+
+      let fontClass = 'font-mono';
+      if (fmt.fontFamily === 'sans') fontClass = 'font-sans';
+      if (fmt.fontFamily === 'serif') fontClass = 'font-serif';
+      if (fmt.fontFamily === 'dotmatrix') fontClass = 'font-dotmatrix';
+
+      DOM.billDesignerPreviewPaper.className = `receipt-paper thermal-mode bg-white text-slate-900 p-5 shadow-lg border border-slate-200 w-full ${fontClass}`;
+      DOM.billDesignerPreviewPaper.style.fontSize = `${fmt.bodyFontSize || 12}px`;
+
+      const barcodeHtml = `
+        <div class="barcode-container py-1 ${fmt.barcodePos === 'hidden' ? 'hidden' : ''}">
+          <div class="simulated-barcode mx-auto"></div>
+          <p class="text-[10px] text-slate-500 tracking-widest mt-0.5">${bill.meta.receiptNumber}</p>
+        </div>
+      `;
+
+      DOM.billDesignerPreviewPaper.innerHTML = `
+        <div class="perforated-edge-top"></div>
+        <div class="receipt-header pb-3 mb-3 border-b border-dashed border-slate-300" style="text-align: ${fmt.textAlign || 'center'};">
+          <div class="pv-preview-logo-container mb-2 ${fmt.showLogo ? '' : 'hidden'}">
+            <div class="w-10 h-10 mx-auto rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-sm">
+              <i class="fa-solid fa-receipt"></i>
+            </div>
+          </div>
+          <h2 class="pv-preview-store-name font-bold tracking-tight uppercase" style="font-size: ${fmt.headerFontSize || 18}px;">${AppState.store.name || bill.store.name}</h2>
+          ${fmt.customTagline ? `<p class="text-[11px] text-purple-700 font-semibold mt-0.5">${escapeHtml(fmt.customTagline)}</p>` : ''}
+          <p class="text-xs text-slate-600 mt-0.5">${AppState.store.address || bill.store.address}</p>
+          <p class="text-xs text-slate-600">${AppState.store.phone || bill.store.phone}</p>
+          <p class="text-xs font-semibold text-slate-700 mt-0.5">${AppState.store.taxId || bill.store.taxId}</p>
+        </div>
+
+        ${fmt.barcodePos === 'top' ? barcodeHtml : ''}
+
+        <div class="receipt-meta text-xs pb-2 mb-2 border-b border-dashed border-slate-300 space-y-0.5">
+          <div class="flex justify-between"><span class="text-slate-500">RECEIPT #:</span><span class="font-bold text-slate-800">${bill.meta.receiptNumber}</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">DATE:</span><span class="font-semibold text-slate-800">${formatHumanDate(bill.meta.dateTime)}</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">CASHIER:</span><span class="font-semibold text-slate-800">${bill.meta.cashierName}</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">CUSTOMER:</span><span class="font-semibold text-slate-800">${bill.customer.name}</span></div>
+        </div>
+
+        <div class="receipt-items-wrapper pb-2 mb-2 border-b border-dashed border-slate-300">
+          <table class="w-full text-xs">
+            <thead>
+              <tr class="border-b border-slate-300 text-slate-500 text-[11px]">
+                <th class="text-left pb-1">ITEM</th>
+                <th class="text-center pb-1">QTY</th>
+                <th class="text-right pb-1">PRICE</th>
+                <th class="text-right pb-1">TOTAL</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-dotted divide-slate-200">
+              ${bill.items.map(it => `
+                <tr class="py-0.5">
+                  <td class="text-left py-0.5 font-medium">${it.name}</td>
+                  <td class="text-center py-0.5">${it.qty}</td>
+                  <td class="text-right py-0.5">${CalculationEngine.formatCurrency(it.price)}</td>
+                  <td class="text-right py-0.5 font-semibold">${CalculationEngine.formatCurrency(it.total)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="receipt-totals text-xs space-y-1 pb-2 mb-2 border-b border-dashed border-slate-300">
+          <div class="flex justify-between text-slate-600"><span>SUBTOTAL</span><span>${CalculationEngine.formatCurrency(bill.billing.subtotal)}</span></div>
+          ${fmt.showTax ? `
+            <div class="flex justify-between text-emerald-700"><span>DISCOUNT (10%)</span><span>-${CalculationEngine.formatCurrency(bill.billing.discountAmount)}</span></div>
+            <div class="flex justify-between text-slate-600 text-[11px]"><span>TAXABLE AMOUNT</span><span>${CalculationEngine.formatCurrency(bill.billing.taxableAmount)}</span></div>
+            <div class="flex justify-between text-slate-600"><span>GST / TAX (18%)</span><span>+${CalculationEngine.formatCurrency(bill.billing.taxAmount)}</span></div>
+          ` : ''}
+          <div class="flex justify-between items-center text-sm font-bold pt-1.5 border-t border-slate-400 text-slate-900">
+            <span>GRAND TOTAL</span>
+            <span class="font-extrabold text-base">${CalculationEngine.formatCurrency(bill.billing.grandTotal)}</span>
+          </div>
+        </div>
+
+        <div class="receipt-footer text-center space-y-2">
+          <div class="inline-block px-2.5 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300">
+            UPI QR - VERIFIED
+          </div>
+          ${fmt.barcodePos === 'bottom' ? barcodeHtml : ''}
+          <p class="text-[11px] text-slate-600 italic px-2">
+            ${escapeHtml(fmt.customFooter || bill.meta.notes)}
+          </p>
+          <div class="text-[9px] text-slate-400 pt-1 border-t border-dotted border-slate-200">
+            Generated via BillBuddy • Local AI Formatted
+          </div>
+        </div>
+        <div class="perforated-edge-bottom"></div>
+      `;
+    }
+  };
+
+  const LocalAiBillEngine = {
+    presets: {
+      thermal_standard: {
+        fontFamily: 'dotmatrix',
+        headerFontSize: 20,
+        bodyFontSize: 12,
+        textAlign: 'center',
+        barcodePos: 'bottom',
+        showLogo: false,
+        showTax: true,
+        customTagline: 'Original Store Receipt',
+        customFooter: 'Thank you for your purchase!'
+      },
+      modern_minimalist: {
+        fontFamily: 'sans',
+        headerFontSize: 18,
+        bodyFontSize: 12,
+        textAlign: 'left',
+        barcodePos: 'top',
+        showLogo: true,
+        showTax: true,
+        customTagline: 'Smart POS Digital Edition',
+        customFooter: 'Hassle-free 7 days exchange policy.'
+      },
+      executive_serif: {
+        fontFamily: 'serif',
+        headerFontSize: 22,
+        bodyFontSize: 12,
+        textAlign: 'center',
+        barcodePos: 'bottom',
+        showLogo: true,
+        showTax: true,
+        customTagline: 'Excellence In Retail Experience',
+        customFooter: 'Visit us online at our official store.'
+      },
+      eco_compact: {
+        fontFamily: 'mono',
+        headerFontSize: 16,
+        bodyFontSize: 11,
+        textAlign: 'center',
+        barcodePos: 'top',
+        showLogo: false,
+        showTax: false,
+        customTagline: 'Eco Paper Saver Format',
+        customFooter: 'Go green! Keep digital receipt.'
+      }
+    },
+
+    processPrompt(promptText) {
+      const text = (promptText || '').toLowerCase().trim();
+      if (!text) {
+        Toast.show('Please enter a description or prompt for the Local AI', 'warning');
+        return;
+      }
+
+      this.log(`[AI PARSER]: Processing natural language command: "${promptText}"`, 'info');
+      if (DOM.aiStatusIndicator) {
+        DOM.aiStatusIndicator.textContent = '● Processing...';
+        DOM.aiStatusIndicator.className = 'text-[10px] text-purple-400 font-mono animate-pulse';
+      }
+
+      // Start with current format clone
+      const format = JSON.parse(JSON.stringify(AppState.billFormat));
+      const corrections = [];
+
+      // 1. Font Family Detection
+      if (text.includes('dotmatrix') || text.includes('dot matrix') || text.includes('courier') || text.includes('typewriter') || text.includes('thermal font')) {
+        format.fontFamily = 'dotmatrix';
+        this.log(`[AI INTENT]: Detected font preference → 'Courier' (Dot-Matrix Thermal)`);
+      } else if (text.includes('sans') || text.includes('modern') || text.includes('clean') || text.includes('inter')) {
+        format.fontFamily = 'sans';
+        this.log(`[AI INTENT]: Detected font preference → 'Inter' (Modern Sans-Serif)`);
+      } else if (text.includes('serif') || text.includes('luxury') || text.includes('boutique') || text.includes('georgia')) {
+        format.fontFamily = 'serif';
+        this.log(`[AI INTENT]: Detected font preference → 'Georgia' (Executive Serif)`);
+      } else if (text.includes('mono') || text.includes('monospace') || text.includes('space mono')) {
+        format.fontFamily = 'mono';
+        this.log(`[AI INTENT]: Detected font preference → 'Space Mono'`);
+      }
+
+      // 2. Alignment
+      if (text.includes('left align') || text.includes('align left') || text.includes('on the left')) {
+        format.textAlign = 'left';
+        this.log(`[AI INTENT]: Detected text alignment → 'left'`);
+      } else if (text.includes('right align') || text.includes('align right') || text.includes('on the right')) {
+        format.textAlign = 'right';
+        this.log(`[AI INTENT]: Detected text alignment → 'right'`);
+      } else if (text.includes('center') || text.includes('centered') || text.includes('middle')) {
+        format.textAlign = 'center';
+        this.log(`[AI INTENT]: Detected text alignment → 'center'`);
+      }
+
+      // 3. Barcode Position
+      if (text.includes('hide barcode') || text.includes('no barcode') || text.includes('remove barcode')) {
+        format.barcodePos = 'hidden';
+        this.log(`[AI INTENT]: Detected barcode status → 'hidden'`);
+      } else if (text.includes('barcode at top') || text.includes('barcode to top') || text.includes('barcode top') || text.includes('top barcode')) {
+        format.barcodePos = 'top';
+        this.log(`[AI INTENT]: Detected barcode position → 'top'`);
+      } else if (text.includes('barcode at bottom') || text.includes('barcode bottom') || text.includes('bottom barcode')) {
+        format.barcodePos = 'bottom';
+        this.log(`[AI INTENT]: Detected barcode position → 'bottom'`);
+      }
+
+      // 4. Logo
+      if (text.includes('hide logo') || text.includes('no logo') || text.includes('remove logo') || text.includes('without logo')) {
+        format.showLogo = false;
+        this.log(`[AI INTENT]: Detected logo setting → 'hidden'`);
+      } else if (text.includes('show logo') || text.includes('with logo') || text.includes('enable logo')) {
+        format.showLogo = true;
+        this.log(`[AI INTENT]: Detected logo setting → 'visible'`);
+      }
+
+      // 5. Tax Breakdown
+      if (text.includes('hide tax') || text.includes('no tax') || text.includes('compact tax') || text.includes('remove tax')) {
+        format.showTax = false;
+        this.log(`[AI INTENT]: Detected tax breakdown → 'compact'`);
+      } else if (text.includes('show tax') || text.includes('tax breakdown') || text.includes('detailed tax')) {
+        format.showTax = true;
+        this.log(`[AI INTENT]: Detected tax breakdown → 'detailed'`);
+      }
+
+      // 6. Header Size Parsing & Autonomous Error Correction
+      const headerPxMatch = text.match(/header(?: size)?.*?(\d+)\s*px/);
+      if (headerPxMatch) {
+        let px = parseInt(headerPxMatch[1], 10);
+        if (px > 24) {
+          corrections.push(`Requested header size ${px}px exceeds 80mm thermal paper boundary. Auto-corrected to 24px safe limit.`);
+          px = 24;
+        } else if (px < 14) {
+          corrections.push(`Requested header size ${px}px is too tiny for store branding. Auto-corrected to 14px minimum.`);
+          px = 14;
+        }
+        format.headerFontSize = px;
+        this.log(`[AI INTENT]: Applied header size → ${px}px`);
+      } else if (text.includes('large header') || text.includes('big header') || text.includes('huge header')) {
+        format.headerFontSize = 22;
+        this.log(`[AI INTENT]: Applied header size preset → 22px (Large)`);
+      } else if (text.includes('small header') || text.includes('compact header')) {
+        format.headerFontSize = 15;
+        this.log(`[AI INTENT]: Applied header size preset → 15px (Compact)`);
+      }
+
+      // 7. Body Size Parsing & Autonomous Error Correction
+      const bodyPxMatch = text.match(/body(?: size)?.*?(\d+)\s*px/);
+      if (bodyPxMatch) {
+        let px = parseInt(bodyPxMatch[1], 10);
+        if (px > 14) {
+          corrections.push(`Body font size ${px}px is too large for thermal items table. Auto-corrected to 14px maximum.`);
+          px = 14;
+        } else if (px < 10) {
+          corrections.push(`Body font size ${px}px unreadable on thermal printheads. Auto-corrected to 11px legible minimum.`);
+          px = 11;
+        }
+        format.bodyFontSize = px;
+        this.log(`[AI INTENT]: Applied body font size → ${px}px`);
+      }
+
+      // 8. Custom Notes Extraction
+      if (text.includes('return policy') || text.includes('exchange policy') || text.includes('policy note')) {
+        format.customFooter = 'Goods once sold can be exchanged within 7 days with original receipt.';
+        this.log(`[AI INTENT]: Injected standard retail return policy note into footer.`);
+      } else if (text.includes('no refund') || text.includes('non refundable')) {
+        format.customFooter = 'Strictly non-refundable. All sales final.';
+        this.log(`[AI INTENT]: Injected non-refundable policy into footer.`);
+      }
+
+      // Log corrections if any
+      if (corrections.length > 0) {
+        corrections.forEach(cor => {
+          this.log(`[AI ERROR DETECTED & AUTO-CORRECTED]: ${cor}`, 'warning');
+        });
+      } else {
+        this.log(`[AI VALIDATION]: All parameters passed thermal paper constraint check (80mm / 48 column).`, 'success');
+      }
+
+      // Apply updated format
+      AppState.billFormat = format;
+      localStorage.setItem(STORAGE_KEYS.BILL_FORMAT, JSON.stringify(AppState.billFormat));
+      BillFormatService.syncControls();
+      BillFormatService.applyFormatToLivePaper();
+      BillFormatService.renderPreviewPaper();
+
+      setTimeout(() => {
+        if (DOM.aiStatusIndicator) {
+          DOM.aiStatusIndicator.textContent = '● Complete';
+          DOM.aiStatusIndicator.className = 'text-[10px] text-emerald-400 font-mono';
+        }
+        Toast.show(`Local AI formatted receipt successfully! (${corrections.length} auto-corrections applied)`, 'success');
+        if (window.confetti) confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+      }, 400);
+    },
+
+    applyPreset(presetKey) {
+      const preset = this.presets[presetKey];
+      if (!preset) return;
+
+      this.log(`[AI PRESET]: Applied curated template "${presetKey.replace('_', ' ').toUpperCase()}"`, 'info');
+      AppState.billFormat = Object.assign({}, AppState.billFormat, preset);
+      localStorage.setItem(STORAGE_KEYS.BILL_FORMAT, JSON.stringify(AppState.billFormat));
+      BillFormatService.syncControls();
+      BillFormatService.applyFormatToLivePaper();
+      BillFormatService.renderPreviewPaper();
+
+      Toast.show(`Applied "${presetKey.replace('_', ' ').toUpperCase()}" template!`, 'success');
+    },
+
+    log(message, type = 'normal') {
+      if (!DOM.aiBillLogContainer) return;
+      const div = document.createElement('div');
+      const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      div.textContent = `[${time}] ${message}`;
+
+      if (type === 'warning') div.className = 'text-amber-400 font-bold';
+      else if (type === 'error') div.className = 'text-rose-400 font-bold';
+      else if (type === 'success') div.className = 'text-emerald-400';
+      else if (type === 'info') div.className = 'text-purple-300';
+      else div.className = 'text-slate-400';
+
+      DOM.aiBillLogContainer.appendChild(div);
+      DOM.aiBillLogContainer.scrollTop = DOM.aiBillLogContainer.scrollHeight;
+    }
+  };
+
+  // ============================================================================
   // 15. ADMIN MODULE (POWER: PRESENTATION, ADD PRODUCTS, QR CODE, ONBOARDING)
   // ============================================================================
   const AdminModule = {
@@ -2100,11 +3172,13 @@
       this.populateWorkerFilter();
       this.populateMonthlyDropdown();
       this.renderCompanySettings();
+      if (typeof BillFormatService !== 'undefined') BillFormatService.init();
     },
 
     bindAdminSubnav() {
       const tabs = [
         { btn: DOM.adminNavCompany, panel: DOM.adminPanelCompany, onOpen: () => this.renderCompanySettings() },
+        { btn: DOM.adminNavBillFormat, panel: DOM.adminPanelBillFormat, onOpen: () => BillFormatService.render() },
         { btn: DOM.adminNavProducts, panel: DOM.adminPanelProducts, onOpen: () => this.renderMonthlyProductAnalytics() },
         { btn: DOM.adminNavCatalog, panel: DOM.adminPanelCatalog, onOpen: () => this.renderAdminCatalog() },
         { btn: DOM.adminNavQrcode, panel: DOM.adminPanelQrcode, onOpen: () => QrConfigService.renderAdminQrPreview() },
@@ -3029,13 +4103,14 @@
   // 19. EVENT WIRING & LISTENERS
   // ============================================================================
   function setupEventListeners() {
-    // 1. Splash Gate (Sign-In & Admin Registration Tabs)
+    // 1. Splash Gate (Sign-In & Store Owner Onboarding Tabs)
     if (DOM.btnSplashTabSignin && DOM.btnSplashTabRegister) {
       DOM.btnSplashTabSignin.addEventListener('click', () => {
         DOM.splashPanelSignin.classList.remove('hidden');
         DOM.splashPanelRegister.classList.add('hidden');
         DOM.btnSplashTabSignin.className = 'flex-1 py-2.5 px-3 rounded-xl bg-white text-slate-900 shadow-sm transition-all flex items-center justify-center gap-2 font-bold';
         DOM.btnSplashTabRegister.className = 'flex-1 py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-2 font-semibold';
+        CaptchaService.refreshSignin();
       });
 
       DOM.btnSplashTabRegister.addEventListener('click', () => {
@@ -3043,33 +4118,200 @@
         DOM.splashPanelRegister.classList.remove('hidden');
         DOM.btnSplashTabRegister.className = 'flex-1 py-2.5 px-3 rounded-xl bg-white text-slate-900 shadow-sm transition-all flex items-center justify-center gap-2 font-bold';
         DOM.btnSplashTabSignin.className = 'flex-1 py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-2 font-semibold';
-        if (DOM.regAdminId && !DOM.regAdminId.value) {
-          DOM.regAdminId.value = AuthService.getNextAdminId();
+        OwnerWizardService.goToStep(1);
+        if (DOM.regOwnerId && DOM.regOwnerId.value) {
+          OwnerIdService.checkAvailability(DOM.regOwnerId.value);
         }
       });
     }
 
-    if (DOM.btnAutoAdminId) {
-      DOM.btnAutoAdminId.addEventListener('click', () => {
-        DOM.regAdminId.value = AuthService.getNextAdminId();
-        Toast.show(`Assigned Admin ID: ${DOM.regAdminId.value}`, 'info');
+    // Sign-In Anti-Bot Captcha Listeners
+    if (DOM.btnRefreshSigninCaptcha) {
+      DOM.btnRefreshSigninCaptcha.addEventListener('click', () => CaptchaService.refreshSignin());
+    }
+    if (DOM.signinCaptchaCanvas) {
+      DOM.signinCaptchaCanvas.addEventListener('click', () => CaptchaService.refreshSignin());
+    }
+    if (DOM.signinCaptchaInput) {
+      DOM.signinCaptchaInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') AuthService.login(DOM.splashEmail.value, DOM.splashPassword.value);
       });
     }
 
-    if (DOM.btnSubmitAdminRegister) {
-      DOM.btnSubmitAdminRegister.addEventListener('click', () => {
-        AuthService.registerAdmin({
-          name: DOM.regAdminName.value,
-          workerId: DOM.regAdminId.value,
-          email: DOM.regAdminEmail.value,
-          password: DOM.regAdminPassword.value,
-          storeName: DOM.regStoreName.value,
-          storeAddress: DOM.regStoreAddress.value,
-          storeTax: DOM.regStoreTax.value,
-          storePhone: DOM.regStorePhone.value,
-          storeUpi: DOM.regStoreUpi.value
+    // Google Sign-In & Sign-Up Buttons & Modal
+    if (DOM.btnGoogleSignin) {
+      DOM.btnGoogleSignin.addEventListener('click', () => GoogleAuthService.openModal('signin'));
+    }
+    if (DOM.btnGoogleSignup) {
+      DOM.btnGoogleSignup.addEventListener('click', () => GoogleAuthService.openModal('signup'));
+    }
+    if (DOM.btnCloseGoogleModal) {
+      DOM.btnCloseGoogleModal.addEventListener('click', () => GoogleAuthService.closeModal());
+    }
+    if (DOM.googleAccountChoices) {
+      DOM.googleAccountChoices.forEach(choice => {
+        choice.addEventListener('click', () => {
+          GoogleAuthService.selectAccount(choice.dataset.name, choice.dataset.email);
         });
       });
+    }
+
+    // Instagram-Style Owner User ID Real-Time Availability Check
+    if (DOM.regOwnerId) {
+      DOM.regOwnerId.addEventListener('input', () => OwnerIdService.checkAvailability(DOM.regOwnerId.value));
+      DOM.regOwnerId.addEventListener('blur', () => OwnerIdService.checkAvailability(DOM.regOwnerId.value));
+    }
+
+    // 4-Step Owner Registration Wizard Navigation
+    if (DOM.btnWizardStep1Next) {
+      DOM.btnWizardStep1Next.addEventListener('click', () => {
+        if (OwnerWizardService.validateStep1()) OwnerWizardService.goToStep(2);
+      });
+    }
+
+    if (DOM.btnWizardStep2Back) {
+      DOM.btnWizardStep2Back.addEventListener('click', () => OwnerWizardService.goToStep(1));
+    }
+    if (DOM.btnWizardStep2Next) {
+      DOM.btnWizardStep2Next.addEventListener('click', () => {
+        if (OwnerWizardService.validateStep2()) OwnerWizardService.goToStep(3);
+      });
+    }
+
+    if (DOM.btnWizardStep3Back) {
+      DOM.btnWizardStep3Back.addEventListener('click', () => OwnerWizardService.goToStep(2));
+    }
+    if (DOM.btnWizardStep3Next) {
+      DOM.btnWizardStep3Next.addEventListener('click', () => {
+        if (OwnerWizardService.validateStep3()) OwnerWizardService.goToStep(4);
+      });
+    }
+
+    if (DOM.btnWizardStep4Back) {
+      DOM.btnWizardStep4Back.addEventListener('click', () => OwnerWizardService.goToStep(3));
+    }
+
+    // Register Captcha & OTP Listeners
+    if (DOM.btnRefreshRegisterCaptcha) {
+      DOM.btnRefreshRegisterCaptcha.addEventListener('click', () => CaptchaService.refreshRegister());
+    }
+    if (DOM.registerCaptchaCanvas) {
+      DOM.registerCaptchaCanvas.addEventListener('click', () => CaptchaService.refreshRegister());
+    }
+    if (DOM.btnRegisterSendOtp) {
+      DOM.btnRegisterSendOtp.addEventListener('click', () => OwnerWizardService.sendOtp());
+    }
+    if (DOM.btnRegisterResendOtp) {
+      DOM.btnRegisterResendOtp.addEventListener('click', () => OwnerWizardService.resendOtp());
+    }
+    if (DOM.registerOtpInput) {
+      DOM.registerOtpInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') OwnerWizardService.submitRegistration();
+      });
+    }
+
+    if (DOM.btnSubmitOwnerRegister) {
+      DOM.btnSubmitOwnerRegister.addEventListener('click', () => OwnerWizardService.submitRegistration());
+    }
+
+    // Success Modal Enter Console Button
+    if (DOM.btnEnterOwnerConsole) {
+      DOM.btnEnterOwnerConsole.addEventListener('click', () => {
+        if (DOM.ownerCreatedSuccessModal) DOM.ownerCreatedSuccessModal.classList.add('hidden');
+        if (DOM.splashAuthOverlay) DOM.splashAuthOverlay.classList.add('hidden');
+        AuthService.applyUserInterface();
+      });
+    }
+
+    // Bill Designer & Autonomous Local AI Listeners
+    if (DOM.btnRunAiFormatter) {
+      DOM.btnRunAiFormatter.addEventListener('click', () => {
+        LocalAiBillEngine.processPrompt(DOM.aiBillPrompt ? DOM.aiBillPrompt.value : '');
+      });
+    }
+    if (DOM.aiBillPrompt) {
+      DOM.aiBillPrompt.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+          e.preventDefault();
+          LocalAiBillEngine.processPrompt(DOM.aiBillPrompt.value);
+        }
+      });
+    }
+    if (DOM.btnAiQuickPresets) {
+      DOM.btnAiQuickPresets.forEach(btn => {
+        btn.addEventListener('click', () => LocalAiBillEngine.applyPreset(btn.dataset.preset));
+      });
+    }
+
+    // Manual Format Sliders & Selects
+    if (DOM.formatHeaderSize) {
+      DOM.formatHeaderSize.addEventListener('input', () => {
+        if (DOM.formatHeaderSizeVal) DOM.formatHeaderSizeVal.textContent = `${DOM.formatHeaderSize.value}px`;
+        AppState.billFormat.headerFontSize = Number(DOM.formatHeaderSize.value);
+        BillFormatService.applyFormatToLivePaper();
+        BillFormatService.renderPreviewPaper();
+      });
+    }
+    if (DOM.formatBodySize) {
+      DOM.formatBodySize.addEventListener('input', () => {
+        if (DOM.formatBodySizeVal) DOM.formatBodySizeVal.textContent = `${DOM.formatBodySize.value}px`;
+        AppState.billFormat.bodyFontSize = Number(DOM.formatBodySize.value);
+        BillFormatService.applyFormatToLivePaper();
+        BillFormatService.renderPreviewPaper();
+      });
+    }
+    if (DOM.formatFontFamily) {
+      DOM.formatFontFamily.addEventListener('change', () => {
+        AppState.billFormat.fontFamily = DOM.formatFontFamily.value;
+        BillFormatService.applyFormatToLivePaper();
+        BillFormatService.renderPreviewPaper();
+      });
+    }
+    if (DOM.formatTextAlign) {
+      DOM.formatTextAlign.addEventListener('change', () => {
+        AppState.billFormat.textAlign = DOM.formatTextAlign.value;
+        BillFormatService.applyFormatToLivePaper();
+        BillFormatService.renderPreviewPaper();
+      });
+    }
+    if (DOM.formatBarcodePos) {
+      DOM.formatBarcodePos.addEventListener('change', () => {
+        AppState.billFormat.barcodePos = DOM.formatBarcodePos.value;
+        BillFormatService.applyFormatToLivePaper();
+        BillFormatService.renderPreviewPaper();
+      });
+    }
+    if (DOM.formatShowLogo) {
+      DOM.formatShowLogo.addEventListener('change', () => {
+        AppState.billFormat.showLogo = DOM.formatShowLogo.value === 'true';
+        BillFormatService.applyFormatToLivePaper();
+        BillFormatService.renderPreviewPaper();
+      });
+    }
+    if (DOM.formatShowTax) {
+      DOM.formatShowTax.addEventListener('change', () => {
+        AppState.billFormat.showTax = DOM.formatShowTax.value === 'true';
+        BillFormatService.applyFormatToLivePaper();
+        BillFormatService.renderPreviewPaper();
+      });
+    }
+    if (DOM.formatCustomTagline) {
+      DOM.formatCustomTagline.addEventListener('input', () => {
+        AppState.billFormat.customTagline = DOM.formatCustomTagline.value;
+        BillFormatService.renderPreviewPaper();
+      });
+    }
+    if (DOM.formatCustomFooter) {
+      DOM.formatCustomFooter.addEventListener('input', () => {
+        AppState.billFormat.customFooter = DOM.formatCustomFooter.value;
+        BillFormatService.renderPreviewPaper();
+      });
+    }
+    if (DOM.btnSaveBillFormat) {
+      DOM.btnSaveBillFormat.addEventListener('click', () => BillFormatService.save());
+    }
+    if (DOM.btnResetBillFormat) {
+      DOM.btnResetBillFormat.addEventListener('click', () => BillFormatService.reset());
     }
 
     DOM.btnSplashSignin.addEventListener('click', () => {
@@ -3651,6 +4893,7 @@
     CatalogService.initCatalog();
     QrConfigService.initQrConfig();
     AdminModule.initAdmin();
+    BillFormatService.init();
 
     const savedStore = StorageService.loadDefaultStore();
     if (savedStore) AppState.store = savedStore;
@@ -3667,8 +4910,9 @@
 
     // Authenticate / Splash Gate
     AuthService.initUsers();
+    CaptchaService.refreshSplash();
 
-    console.log('BillBuddy loaded with strict role separation and presentation capabilities.');
+    console.log('BillBuddy loaded with strict role separation, Local AI Bill Designer, and Owner capabilities.');
   }
 
   if (document.readyState === 'loading') {

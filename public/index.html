@@ -73,15 +73,15 @@
         <h1 class="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">Bill<span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-purple-600">Buddy</span></h1>
         <p class="text-xs font-semibold text-slate-500 mt-1 uppercase tracking-widest">Enterprise POS & Sales Intelligence</p>
         
-        <!-- Segmented Tab Switcher: Sign In vs Register Admin -->
+        <!-- Segmented Tab Switcher: Sign In vs Register Owner -->
         <div id="splash-tab-switcher" class="mt-6 flex p-1.5 bg-slate-100 rounded-2xl border border-slate-200/90 text-xs sm:text-sm font-bold">
           <button id="btn-splash-tab-signin" type="button" class="flex-1 py-2.5 px-3 rounded-xl bg-white text-slate-900 shadow-sm transition-all flex items-center justify-center gap-2">
             <i class="fa-solid fa-arrow-right-to-bracket text-indigo-600"></i>
             <span>Staff Sign In</span>
           </button>
           <button id="btn-splash-tab-register" type="button" class="flex-1 py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-2">
-            <i class="fa-solid fa-building-circle-check text-purple-600"></i>
-            <span>Register New Admin</span>
+            <i class="fa-solid fa-crown text-purple-600"></i>
+            <span>Register Store Owner</span>
             <span class="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 text-white leading-none">NEW</span>
           </button>
         </div>
@@ -89,11 +89,27 @@
 
       <!-- PANEL A: STAFF SIGN IN (DEFAULT) -->
       <div id="splash-panel-signin" class="p-6 sm:p-8 space-y-4">
-        <form id="splash-auth-form" autocomplete="off" onsubmit="return false;" class="space-y-4">
+        <!-- 1-Click Google Sign In -->
+        <button type="button" id="btn-google-signin" class="w-full py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-300 rounded-2xl text-xs sm:text-sm font-bold text-slate-700 flex items-center justify-center gap-2.5 shadow-xs transition-all hover:border-slate-400">
+          <svg class="w-4 h-4" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
+            <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+          </svg>
+          <span>Continue with Google</span>
+        </button>
+
+        <div class="relative flex items-center justify-center my-1">
+          <div class="border-t border-slate-200 w-full"></div>
+          <span class="bg-white px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider absolute">or sign in with credentials</span>
+        </div>
+
+        <form id="splash-auth-form" autocomplete="off" onsubmit="return false;" class="space-y-3.5">
           <div>
-            <label for="splash-email" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Worker ID / Email Address *</label>
+            <label for="splash-email" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Address or User ID *</label>
             <div class="relative">
-              <input type="text" id="splash-email" class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-brand-500 focus:bg-white focus:border-brand-500 transition-all" placeholder="Enter Worker ID (e.g. ADM-001, WRK-101) or Email" value="" autocomplete="off" required>
+              <input type="text" id="splash-email" class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-brand-500 focus:bg-white focus:border-brand-500 transition-all" placeholder="Enter your Email or User ID (e.g. owner@mystore.com or @alex)" value="" autocomplete="off" required>
               <i class="fa-solid fa-id-badge absolute left-4 top-3.5 text-slate-400 text-base"></i>
             </div>
           </div>
@@ -101,7 +117,7 @@
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <label for="splash-password" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Password *</label>
-              <button type="button" id="btn-splash-forgot-password" class="text-xs font-bold text-purple-600 hover:text-purple-700 transition-colors">Forgot Password? (Admin)</button>
+              <button type="button" id="btn-splash-forgot-password" class="text-xs font-bold text-purple-600 hover:text-purple-700 transition-colors">Forgot Password? (Owner)</button>
             </div>
             <div class="relative">
               <input type="password" id="splash-password" class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-brand-500 focus:bg-white focus:border-brand-500 transition-all" placeholder="Enter your secret password" value="" autocomplete="new-password" required>
@@ -109,105 +125,281 @@
             </div>
           </div>
 
-          <button id="btn-splash-signin" type="button" class="w-full py-3.5 sm:py-4 px-6 rounded-2xl font-bold text-white btn-modern-primary text-sm sm:text-base tracking-wide flex items-center justify-center gap-2">
+          <!-- Sign-In Anti-Bot Captcha -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="signin-captcha-input" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Captcha Verification *</label>
+              <span class="text-[10px] font-semibold text-slate-500">Case-insensitive</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <canvas id="signin-captcha-canvas" width="150" height="42" class="rounded-xl border border-slate-300 bg-white shadow-xs cursor-pointer" title="Click to refresh captcha"></canvas>
+              <button type="button" id="btn-refresh-signin-captcha" class="p-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 hover:text-purple-600 transition-colors shadow-xs" title="Generate new captcha code">
+                <i class="fa-solid fa-arrows-rotate text-sm"></i>
+              </button>
+              <input type="text" id="signin-captcha-input" maxlength="6" class="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-mono font-bold uppercase tracking-wider focus:ring-2 focus:ring-brand-500 focus:bg-white" placeholder="Enter Captcha" required>
+            </div>
+          </div>
+
+          <button id="btn-splash-signin" type="button" class="w-full py-3.5 sm:py-4 px-6 rounded-2xl font-bold text-white btn-modern-primary text-sm sm:text-base tracking-wide flex items-center justify-center gap-2 shadow-lg">
             <span>Sign In to POS Console</span>
             <i class="fa-solid fa-arrow-right text-sm"></i>
           </button>
 
           <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/70 text-center">
             <p class="text-xs text-slate-500">
-              <strong class="text-slate-700">Strict Role Separation:</strong> Workers access POS Billing; Administrators manage Executive Analytics & Workers.
+              <strong class="text-slate-700">Strict Role Separation:</strong> Workers access POS Billing; Store Owners manage Executive Analytics, Bill Formats & Staff.
             </p>
           </div>
         </form>
       </div>
 
-      <!-- PANEL B: CREATE NEW ADMIN & STORE PROFILE (ONBOARDING) -->
-      <div id="splash-panel-register" class="p-6 sm:p-8 space-y-4 hidden max-h-[60vh] overflow-y-auto">
-        <form id="splash-register-form" autocomplete="off" onsubmit="return false;" class="space-y-4">
-          
-          <div class="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100/80">
-            <h3 class="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-              <i class="fa-solid fa-user-shield text-indigo-600"></i>
-              <span>1. Admin Account Credentials</span>
-            </h3>
+      <!-- PANEL B: CREATE STORE OWNER (4-STEP ONBOARDING WIZARD) -->
+      <div id="splash-panel-register" class="p-6 sm:p-8 space-y-4 hidden max-h-[65vh] overflow-y-auto">
+        
+        <!-- Wizard Stepper Indicator -->
+        <div class="px-2 pt-1 pb-3 border-b border-slate-100 mb-2">
+          <div class="flex items-center justify-between relative">
+            <div class="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-0.5 bg-slate-200 z-0"></div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label for="reg-admin-name" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Admin Full Name *</label>
-                <input type="text" id="reg-admin-name" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-brand-500" placeholder="e.g. Ramesh Reddy" required>
-              </div>
-              <div>
-                <div class="flex items-center justify-between mb-1">
-                  <label for="reg-admin-id" class="block text-[11px] font-bold text-slate-700 uppercase">Admin ID *</label>
-                  <button id="btn-auto-admin-id" type="button" class="text-[10px] font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded">Auto ID</button>
-                </div>
-                <input type="text" id="reg-admin-id" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-mono font-bold uppercase focus:ring-2 focus:ring-brand-500" placeholder="ADM-002" value="ADM-002" required>
-              </div>
+            <!-- Step 1 -->
+            <div class="relative z-10 flex flex-col items-center">
+              <div id="step-indicator-1" class="wizard-step-circle wizard-step-active">1</div>
+              <span class="text-[10px] font-bold text-slate-700 mt-1">Owner ID</span>
             </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-              <div>
-                <label for="reg-admin-email" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Admin Login Email *</label>
-                <input type="email" id="reg-admin-email" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-brand-500" placeholder="e.g. admin@mystore.com" required>
-              </div>
-              <div>
-                <label for="reg-admin-password" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Admin Password *</label>
-                <input type="password" id="reg-admin-password" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-brand-500" placeholder="Min 6 characters" required>
-              </div>
+            <!-- Step 2 -->
+            <div class="relative z-10 flex flex-col items-center">
+              <div id="step-indicator-2" class="wizard-step-circle wizard-step-pending">2</div>
+              <span class="text-[10px] font-bold text-slate-500 mt-1">Store</span>
+            </div>
+            <!-- Step 3 -->
+            <div class="relative z-10 flex flex-col items-center">
+              <div id="step-indicator-3" class="wizard-step-circle wizard-step-pending">3</div>
+              <span class="text-[10px] font-bold text-slate-500 mt-1">UPI & QR</span>
+            </div>
+            <!-- Step 4 -->
+            <div class="relative z-10 flex flex-col items-center">
+              <div id="step-indicator-4" class="wizard-step-circle wizard-step-pending">4</div>
+              <span class="text-[10px] font-bold text-slate-500 mt-1">Verify OTP</span>
             </div>
           </div>
+        </div>
 
-          <div class="bg-purple-50/50 p-4 rounded-2xl border border-purple-100/80">
-            <h3 class="text-xs font-bold text-purple-900 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-              <i class="fa-solid fa-store text-purple-600"></i>
-              <span>2. Company & Payment Setup (Isolated Workspace)</span>
-            </h3>
+        <form id="splash-register-form" autocomplete="off" onsubmit="return false;" class="space-y-4">
+          
+          <!-- STEP 1: OWNER CREDENTIALS & CUSTOM USER ID -->
+          <div id="wizard-step-1" class="space-y-3">
+            <button type="button" id="btn-google-signup" class="w-full py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-300 rounded-2xl text-xs sm:text-sm font-bold text-slate-700 flex items-center justify-center gap-2.5 shadow-xs transition-all hover:border-slate-400">
+              <svg class="w-4 h-4" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
+                <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+              </svg>
+              <span>Quick Sign Up with Google</span>
+            </button>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="relative flex items-center justify-center my-1">
+              <div class="border-t border-slate-200 w-full"></div>
+              <span class="bg-white px-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider absolute">or create credentials</span>
+            </div>
+
+            <div class="bg-indigo-50/60 p-4 rounded-2xl border border-indigo-100/80 space-y-3">
               <div>
-                <label for="reg-store-name" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Company / Store Name *</label>
-                <input type="text" id="reg-store-name" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-bold focus:ring-2 focus:ring-purple-500" placeholder="e.g. Royal Mart Supermarket" required>
+                <label for="reg-owner-name" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Owner Full Name *</label>
+                <input type="text" id="reg-owner-name" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-brand-500" placeholder="e.g. Ramesh Reddy" required>
               </div>
+
+              <!-- Instagram-Style Custom User ID with Real-Time Checker & Suggestions -->
               <div>
-                <label for="reg-store-tax" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">GSTIN / Tax ID</label>
-                <input type="text" id="reg-store-tax" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-mono focus:ring-2 focus:ring-purple-500" placeholder="e.g. 36AABCU9603R1ZM">
+                <div class="flex items-center justify-between mb-1">
+                  <label for="reg-owner-id" class="block text-[11px] font-bold text-slate-700 uppercase">Create Custom Owner ID *</label>
+                  <span id="owner-id-status" class="text-[11px] font-bold text-slate-500 font-mono"></span>
+                </div>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-2.5 text-slate-400 font-bold font-mono text-sm">@</span>
+                  <input type="text" id="reg-owner-id" class="w-full pl-8 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-mono font-bold focus:ring-2 focus:ring-brand-500 uppercase tracking-wide" placeholder="e.g. alex, apex_mart" value="OWN-002" required>
+                </div>
+
+                <!-- Instagram Suggestion Pills Box -->
+                <div id="owner-id-suggestions-container" class="mt-2 p-2.5 bg-white rounded-xl border border-indigo-200 hidden">
+                  <div class="text-[11px] font-semibold text-indigo-900 flex items-center gap-1 mb-1.5">
+                    <i class="fa-solid fa-sparkles text-indigo-500"></i>
+                    <span>ID already allocated! Choose an Instagram-style suggestion:</span>
+                  </div>
+                  <div id="owner-id-suggestions-list" class="flex flex-wrap gap-1.5"></div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label for="reg-owner-email" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Owner Login Email *</label>
+                  <input type="email" id="reg-owner-email" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-brand-500" placeholder="e.g. owner@mystore.com" required>
+                </div>
+                <div>
+                  <label for="reg-owner-password" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Owner Password *</label>
+                  <input type="password" id="reg-owner-password" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-brand-500" placeholder="Min 6 characters" required>
+                </div>
               </div>
             </div>
 
-            <div class="mt-3">
-              <label for="reg-store-address" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Store / Business Address *</label>
-              <input type="text" id="reg-store-address" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-purple-500" placeholder="e.g. Shop 14, Main Ring Road, Guntur" required>
-            </div>
+            <button id="btn-wizard-step-1-next" type="button" class="w-full py-3 px-6 rounded-2xl font-bold text-white btn-modern-primary text-sm flex items-center justify-center gap-2 shadow-md">
+              <span>Next: Store Profile</span>
+              <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+          </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+          <!-- STEP 2: STORE & BUSINESS PROFILE -->
+          <div id="wizard-step-2" class="space-y-3 hidden">
+            <div class="bg-purple-50/60 p-4 rounded-2xl border border-purple-100/80 space-y-3">
+              <h3 class="text-xs font-bold text-purple-900 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-store text-purple-600"></i>
+                <span>Store & Business Identity</span>
+              </h3>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label for="reg-store-name" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Company / Store Name *</label>
+                  <input type="text" id="reg-store-name" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-bold focus:ring-2 focus:ring-purple-500" placeholder="e.g. Royal Mart Supermarket" required>
+                </div>
+                <div>
+                  <label for="reg-store-tax" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">GSTIN / Tax ID</label>
+                  <input type="text" id="reg-store-tax" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-mono focus:ring-2 focus:ring-purple-500" placeholder="e.g. 36AABCU9603R1ZM">
+                </div>
+              </div>
+
+              <div>
+                <label for="reg-store-address" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Store / Business Address *</label>
+                <input type="text" id="reg-store-address" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-purple-500" placeholder="e.g. Shop 14, Main Ring Road, Guntur" required>
+              </div>
+
               <div>
                 <label for="reg-store-phone" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Store Phone *</label>
                 <input type="text" id="reg-store-phone" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-purple-500" placeholder="+91 98765 00000" required>
               </div>
+            </div>
+
+            <div class="flex gap-2 pt-1">
+              <button id="btn-wizard-step-2-back" type="button" class="py-2.5 px-4 rounded-xl border border-slate-300 text-xs sm:text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors">
+                <i class="fa-solid fa-arrow-left mr-1"></i> Back
+              </button>
+              <button id="btn-wizard-step-2-next" type="button" class="flex-1 py-2.5 px-4 rounded-xl font-bold text-white btn-modern-primary text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md">
+                <span>Next: UPI & QR Code</span>
+                <i class="fa-solid fa-arrow-right text-xs"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 3: UPI QR & BILLING BRANDING -->
+          <div id="wizard-step-3" class="space-y-3 hidden">
+            <div class="bg-indigo-50/60 p-4 rounded-2xl border border-indigo-100/80 space-y-3">
+              <h3 class="text-xs font-bold text-indigo-900 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-qrcode text-indigo-600"></i>
+                <span>Payment QR & Receipt Footer Setup</span>
+              </h3>
+
               <div>
                 <label for="reg-store-upi" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Store UPI QR ID (VPA) *</label>
                 <input type="text" id="reg-store-upi" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-mono text-brand-700 focus:ring-2 focus:ring-purple-500" placeholder="e.g. royalmart@icici" required>
               </div>
+
+              <div>
+                <label for="reg-store-merchant" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Merchant Payee Name</label>
+                <input type="text" id="reg-store-merchant" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-purple-500" placeholder="e.g. Royal Mart Enterprises">
+              </div>
+
+              <div>
+                <label for="reg-store-notes" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Receipt Footer Tagline</label>
+                <input type="text" id="reg-store-notes" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-purple-500" placeholder="Thank you for shopping with us! Visit again.">
+              </div>
+            </div>
+
+            <div class="flex gap-2 pt-1">
+              <button id="btn-wizard-step-3-back" type="button" class="py-2.5 px-4 rounded-xl border border-slate-300 text-xs sm:text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors">
+                <i class="fa-solid fa-arrow-left mr-1"></i> Back
+              </button>
+              <button id="btn-wizard-step-3-next" type="button" class="flex-1 py-2.5 px-4 rounded-xl font-bold text-white btn-modern-primary text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md">
+                <span>Next: Security & OTP</span>
+                <i class="fa-solid fa-arrow-right text-xs"></i>
+              </button>
             </div>
           </div>
 
-          <button id="btn-submit-admin-register" type="button" class="w-full py-3.5 sm:py-4 px-6 rounded-2xl font-bold text-white btn-modern-primary text-sm sm:text-base tracking-wide flex items-center justify-center gap-2">
-            <i class="fa-solid fa-rocket"></i>
-            <span>Create Admin & Launch Store</span>
-          </button>
+          <!-- STEP 4: SECURITY VERIFICATION (CAPTCHA + EMAIL OTP) -->
+          <div id="wizard-step-4" class="space-y-3 hidden">
+            <div class="bg-purple-50/60 p-4 rounded-2xl border border-purple-100/80 space-y-3">
+              <h3 class="text-xs font-bold text-purple-900 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-shield-halved text-purple-600"></i>
+                <span>Anti-Bot Captcha & Email OTP Verification</span>
+              </h3>
+
+              <!-- Captcha -->
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label for="register-captcha-input" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Captcha Verification *</label>
+                  <span class="text-[10px] font-semibold text-slate-500">Case-insensitive</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <canvas id="register-captcha-canvas" width="150" height="42" class="rounded-xl border border-slate-300 bg-white shadow-xs cursor-pointer" title="Click to refresh captcha"></canvas>
+                  <button type="button" id="btn-refresh-register-captcha" class="p-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 hover:text-purple-600 transition-colors shadow-xs" title="Generate new captcha code">
+                    <i class="fa-solid fa-arrows-rotate text-sm"></i>
+                  </button>
+                  <input type="text" id="register-captcha-input" maxlength="6" class="flex-1 px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-mono font-bold uppercase tracking-wider focus:ring-2 focus:ring-purple-500" placeholder="Code" required>
+                </div>
+              </div>
+
+              <!-- OTP Dispatch Button -->
+              <button id="btn-register-send-otp" type="button" class="w-full py-2.5 px-4 rounded-xl border border-purple-300 bg-white hover:bg-purple-50 text-purple-700 font-bold text-xs flex items-center justify-center gap-2 transition-colors">
+                <i class="fa-solid fa-paper-plane text-xs"></i>
+                <span>Send 6-Digit Verification OTP to Email</span>
+              </button>
+
+              <!-- Simulated OTP Alert Box -->
+              <div id="register-otp-sim-alert" class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 space-y-1 hidden">
+                <div class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
+                  <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                  <span>OTP Sent to <strong id="register-target-email-display" class="font-mono text-emerald-950"></strong></span>
+                </div>
+                <div class="flex items-center justify-between bg-white/90 p-2 rounded-lg border border-emerald-300">
+                  <span class="text-[11px] font-semibold text-slate-600">Simulated Demo OTP:</span>
+                  <span id="register-simulated-otp-code" class="font-mono font-black text-base text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200"></span>
+                </div>
+              </div>
+
+              <!-- 6-digit OTP input -->
+              <div>
+                <label for="register-otp-input" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 text-center">Enter 6-Digit Email Code *</label>
+                <input type="text" id="register-otp-input" maxlength="6" class="w-full py-2.5 px-4 bg-white border-2 border-purple-300 rounded-xl font-mono text-center text-xl font-black tracking-[0.3em] text-slate-800 focus:ring-2 focus:ring-purple-500" placeholder="••••••" required>
+              </div>
+
+              <div class="flex items-center justify-between text-xs text-slate-500 px-1">
+                <span>Expires: <strong id="register-otp-countdown" class="text-slate-700 font-mono">05:00</strong></span>
+                <button type="button" id="btn-register-resend-otp" class="font-bold text-purple-600 hover:text-purple-700 disabled:text-slate-400 disabled:cursor-not-allowed" disabled>Resend OTP</button>
+              </div>
+            </div>
+
+            <div class="flex gap-2 pt-1">
+              <button id="btn-wizard-step-4-back" type="button" class="py-2.5 px-4 rounded-xl border border-slate-300 text-xs sm:text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors">
+                <i class="fa-solid fa-arrow-left mr-1"></i> Back
+              </button>
+              <button id="btn-submit-owner-register" type="button" class="flex-1 py-3 px-6 rounded-2xl font-bold text-white btn-modern-primary text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg">
+                <i class="fa-solid fa-rocket"></i>
+                <span>Create Owner & Launch Store</span>
+              </button>
+            </div>
+          </div>
+
         </form>
       </div>
 
-      <!-- PANEL C: ADMIN FORGOT PASSWORD & OTP VERIFICATION -->
+      <!-- PANEL C: OWNER FORGOT PASSWORD & OTP VERIFICATION -->
       <div id="splash-panel-forgot" class="p-6 sm:p-8 space-y-4 hidden max-h-[65vh] overflow-y-auto">
         <div class="flex items-center justify-between pb-2 border-b border-slate-100">
           <div>
             <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
               <i class="fa-solid fa-key text-purple-600"></i>
-              <span>Admin Password Recovery</span>
+              <span>Store Owner Password Recovery</span>
             </h3>
-            <p class="text-xs text-slate-500 mt-0.5">Verify your Admin email with security OTP & Captcha</p>
+            <p class="text-xs text-slate-500 mt-0.5">Verify your Owner email with security OTP & Captcha</p>
           </div>
           <button type="button" id="btn-forgot-back-to-signin" class="text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1.5 transition-colors px-2.5 py-1 rounded-lg hover:bg-slate-100">
             <i class="fa-solid fa-arrow-left"></i>
@@ -219,12 +411,12 @@
         <div id="forgot-step-1" class="space-y-4">
           <div class="bg-indigo-50/60 p-4 rounded-2xl border border-indigo-100/80 space-y-3">
             <div>
-              <label for="forgot-admin-email" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Registered Admin Email *</label>
+              <label for="forgot-admin-email" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Registered Owner Email *</label>
               <div class="relative">
-                <input type="email" id="forgot-admin-email" class="w-full pl-11 pr-4 py-3 bg-white border border-slate-300 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all" placeholder="Enter your Admin account email (e.g. admin@billbuddy.com)" autocomplete="email" required>
+                <input type="email" id="forgot-admin-email" class="w-full pl-11 pr-4 py-3 bg-white border border-slate-300 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all" placeholder="Enter your Owner account email (e.g. owner@mystore.com)" autocomplete="email" required>
                 <i class="fa-solid fa-envelope absolute left-4 top-3.5 text-slate-400 text-base"></i>
               </div>
-              <p class="text-[11px] text-slate-500 mt-1">Self-service password recovery is reserved for Store Administrators.</p>
+              <p class="text-[11px] text-slate-500 mt-1">Self-service password recovery is reserved for Store Owners.</p>
             </div>
 
             <!-- Visual Anti-Bot Captcha -->
@@ -291,7 +483,7 @@
               <i class="fa-solid fa-lock-open text-purple-600"></i>
               <span>Identity Verified</span>
             </div>
-            <p class="text-xs text-purple-700">Choose a strong, new password for your Admin account.</p>
+            <p class="text-xs text-purple-700">Choose a strong, new password for your Owner account.</p>
           </div>
 
           <div class="bg-white p-4 rounded-2xl border border-slate-200 space-y-3">
@@ -792,12 +984,16 @@
   <main id="view-admin" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 hidden">
     <div class="space-y-6">
       
-      <!-- Admin Navigation Subtabs -->
+      <!-- Owner Navigation Subtabs -->
       <div class="bg-white rounded-2xl p-2 border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm font-semibold">
+        <div class="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm font-semibold flex-wrap gap-y-1">
           <button id="admin-nav-company" type="button" class="admin-tab-btn px-4 py-2 rounded-xl text-slate-600 hover:text-slate-900 transition-all flex items-center gap-2">
             <i class="fa-solid fa-store"></i>
             <span>Company Profile</span>
+          </button>
+          <button id="admin-nav-bill-format" type="button" class="admin-tab-btn px-4 py-2 rounded-xl text-slate-600 hover:text-slate-900 transition-all flex items-center gap-2">
+            <i class="fa-solid fa-wand-magic-sparkles text-purple-600"></i>
+            <span>Bill Designer & Local AI</span>
           </button>
           <button id="admin-nav-products" type="button" class="admin-tab-btn active px-4 py-2 rounded-xl bg-purple-600 text-white shadow-xs transition-all flex items-center gap-2">
             <i class="fa-solid fa-chart-pie"></i>
@@ -813,7 +1009,7 @@
           </button>
           <button id="admin-nav-workers" type="button" class="admin-tab-btn px-4 py-2 rounded-xl text-slate-600 hover:text-slate-900 transition-all flex items-center gap-2">
             <i class="fa-solid fa-user-plus"></i>
-            <span>Provision Workers</span>
+            <span>Provision Store Staff</span>
           </button>
           <button id="admin-nav-analytics" type="button" class="admin-tab-btn px-4 py-2 rounded-xl text-slate-600 hover:text-slate-900 transition-all flex items-center gap-2">
             <i class="fa-solid fa-chart-column"></i>
@@ -830,7 +1026,207 @@
         </div>
       </div>
 
-      <!-- TAB 0: COMPANY / STORE PROFILE SETTINGS (ADMIN AUTHORITY) -->
+      <!-- TAB: BILL DESIGNER & LOCAL AI FORMATTING ENGINE -->
+      <div id="admin-panel-bill-format" class="space-y-6 hidden">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 mb-4 border-b border-slate-200 gap-3">
+            <div class="flex items-center space-x-2.5">
+              <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shadow-xs">
+                <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <span>Thermal Bill Designer & Local AI Engine</span>
+                  <span class="ai-terminal-badge">Autonomous AI</span>
+                </h3>
+                <p class="text-xs text-slate-500">Customize typography, text position, barcode, and layout using natural language AI commands</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="btn-reset-bill-format" type="button" class="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+                <i class="fa-solid fa-rotate-left mr-1"></i> Reset to Default
+              </button>
+              <button id="btn-save-bill-format" type="button" class="px-4 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md transition-all">
+                <i class="fa-solid fa-floppy-disk mr-1"></i> Save Format
+              </button>
+            </div>
+          </div>
+
+          <!-- 2-COLUMN DESIGNER STUDIO -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- LEFT: LOCAL AI & FINE-TUNING CONTROLS (7 cols) -->
+            <div class="lg:col-span-7 space-y-5">
+              
+              <!-- Local AI Command Box -->
+              <div class="bg-gradient-to-br from-purple-900 via-indigo-950 to-slate-900 p-5 rounded-2xl text-white shadow-xl relative overflow-hidden border border-purple-500/20">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-extrabold uppercase tracking-wider text-purple-300 flex items-center gap-1.5">
+                    <i class="fa-solid fa-brain text-purple-400"></i> Local AI Assistant
+                  </span>
+                  <span class="text-[10px] bg-purple-500/30 text-purple-200 px-2 py-0.5 rounded-full border border-purple-400/30 font-mono">Self-Correcting Layout Guard</span>
+                </div>
+                <p class="text-xs text-purple-200/80 mb-3">Describe how you want your receipt to look in plain English:</p>
+                
+                <div class="space-y-2.5">
+                  <div class="relative">
+                    <textarea id="ai-bill-prompt" rows="2" class="w-full px-3.5 py-2.5 bg-black/40 border border-purple-500/30 rounded-xl text-xs sm:text-sm text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-400 focus:outline-none transition-all font-mono" placeholder="e.g. Set font to dotmatrix, center all text, make header large, place barcode at the top, and add return policy note"></textarea>
+                  </div>
+                  
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex flex-wrap gap-1.5">
+                      <button type="button" class="btn-ai-quick-preset text-[11px] font-medium bg-white/10 hover:bg-white/20 text-purple-200 px-2.5 py-1 rounded-lg transition-colors border border-white/10" data-preset="thermal_standard">
+                        ⚡ Thermal Standard
+                      </button>
+                      <button type="button" class="btn-ai-quick-preset text-[11px] font-medium bg-white/10 hover:bg-white/20 text-purple-200 px-2.5 py-1 rounded-lg transition-colors border border-white/10" data-preset="modern_minimalist">
+                        ✨ Modern Clean
+                      </button>
+                      <button type="button" class="btn-ai-quick-preset text-[11px] font-medium bg-white/10 hover:bg-white/20 text-purple-200 px-2.5 py-1 rounded-lg transition-colors border border-white/10" data-preset="executive_serif">
+                        🏛️ Executive Serif
+                      </button>
+                      <button type="button" class="btn-ai-quick-preset text-[11px] font-medium bg-white/10 hover:bg-white/20 text-purple-200 px-2.5 py-1 rounded-lg transition-colors border border-white/10" data-preset="eco_compact">
+                        🌱 Eco Compact
+                      </button>
+                    </div>
+                    <button id="btn-run-ai-formatter" type="button" class="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5">
+                      <i class="fa-solid fa-bolt"></i>
+                      <span>Format with AI</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- AI Diagnostic Terminal Log Box -->
+                <div class="mt-4 pt-3 border-t border-purple-500/20">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                      <i class="fa-solid fa-terminal text-purple-400"></i> AI Layout Diagnostics & Error Corrections
+                    </span>
+                    <span id="ai-status-indicator" class="text-[10px] text-emerald-400 font-mono">● Ready</span>
+                  </div>
+                  <div id="ai-bill-log-container" class="ai-terminal-box p-3 max-h-28 overflow-y-auto space-y-1">
+                    <div class="text-slate-400">[SYSTEM]: Local AI engine initialized with thermal paper boundaries (80mm / 48 chars).</div>
+                    <div class="text-emerald-400">[READY]: Awaiting natural language formatting commands...</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Manual Fine-Tuning Controls -->
+              <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+                <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                  <i class="fa-solid fa-sliders text-indigo-600"></i>
+                  <span>Manual Layout Fine-Tuning</span>
+                </h4>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <!-- Font Family -->
+                  <div>
+                    <label for="format-font-family" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Receipt Font Family</label>
+                    <select id="format-font-family" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold focus:ring-2 focus:ring-purple-500">
+                      <option value="mono">Space Mono (Modern Tech POS)</option>
+                      <option value="dotmatrix">Courier (Thermal Dot-Matrix)</option>
+                      <option value="sans">Inter / Sans-Serif (Clean Minimal)</option>
+                      <option value="serif">Georgia / Serif (Boutique / Luxury)</option>
+                    </select>
+                  </div>
+
+                  <!-- Alignment -->
+                  <div>
+                    <label for="format-text-align" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Header Text Alignment</label>
+                    <select id="format-text-align" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold focus:ring-2 focus:ring-purple-500">
+                      <option value="center">Centered (Standard)</option>
+                      <option value="left">Left Aligned</option>
+                      <option value="right">Right Aligned</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <!-- Header Font Size -->
+                  <div>
+                    <div class="flex justify-between items-center mb-1">
+                      <label for="format-header-size" class="text-[11px] font-bold text-slate-700 uppercase">Store Header Font Size</label>
+                      <span id="format-header-size-val" class="text-xs font-mono font-bold text-purple-700">18px</span>
+                    </div>
+                    <input type="range" id="format-header-size" min="14" max="24" value="18" class="w-full accent-purple-600">
+                  </div>
+
+                  <!-- Body Font Size -->
+                  <div>
+                    <div class="flex justify-between items-center mb-1">
+                      <label for="format-body-size" class="text-[11px] font-bold text-slate-700 uppercase">Body / Items Font Size</label>
+                      <span id="format-body-size-val" class="text-xs font-mono font-bold text-purple-700">12px</span>
+                    </div>
+                    <input type="range" id="format-body-size" min="10" max="14" value="12" class="w-full accent-purple-600">
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <!-- Barcode Position -->
+                  <div>
+                    <label for="format-barcode-pos" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Barcode Position</label>
+                    <select id="format-barcode-pos" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-purple-500">
+                      <option value="bottom">Bottom (Standard)</option>
+                      <option value="top">Top (Header)</option>
+                      <option value="hidden">Hidden</option>
+                    </select>
+                  </div>
+
+                  <!-- Show Logo -->
+                  <div>
+                    <label for="format-show-logo" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Shop Logo</label>
+                    <select id="format-show-logo" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-purple-500">
+                      <option value="true">Visible</option>
+                      <option value="false">Hidden</option>
+                    </select>
+                  </div>
+
+                  <!-- Show Tax Breakdown -->
+                  <div>
+                    <label for="format-show-tax" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Tax Breakdown</label>
+                    <select id="format-show-tax" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-purple-500">
+                      <option value="true">Show Full Breakdown</option>
+                      <option value="false">Compact Total Only</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Custom Tagline & Footer Notes -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label for="format-custom-tagline" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Header Subtitle / Tagline</label>
+                    <input type="text" id="format-custom-tagline" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-purple-500" placeholder="e.g. Quality You Can Trust">
+                  </div>
+                  <div>
+                    <label for="format-custom-footer" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Custom Footer Policy Note</label>
+                    <input type="text" id="format-custom-footer" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-purple-500" placeholder="e.g. Goods once sold can be exchanged within 7 days">
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- RIGHT: LIVE INTERACTIVE BILL PREVIEW (5 cols) -->
+            <div class="lg:col-span-5 flex flex-col items-center">
+              <div class="w-full flex items-center justify-between mb-2 px-1">
+                <span class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <i class="fa-solid fa-receipt text-purple-600"></i> Live 80mm Paper Preview
+                </span>
+                <span class="text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">Default Bill Loaded</span>
+              </div>
+
+              <div class="w-full max-w-sm bg-slate-100 p-3 sm:p-4 rounded-3xl border border-slate-200 shadow-inner flex justify-center">
+                <!-- Rendered Thermal Preview Paper -->
+                <div id="bill-designer-preview-paper" class="receipt-paper thermal-mode bg-white text-slate-900 p-5 shadow-lg border border-slate-200 w-full text-xs">
+                  <!-- Dynamically populated by ReceiptRenderer & BillFormatService -->
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 0: COMPANY / STORE PROFILE SETTINGS (OWNER AUTHORITY) -->
       <div id="admin-panel-company" class="space-y-6 hidden">
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
           <div class="flex items-center space-x-2.5 pb-4 mb-4 border-b border-slate-200">
@@ -839,7 +1235,7 @@
             </div>
             <div>
               <h3 class="text-base font-bold text-slate-900">Company & Business Profile Settings</h3>
-              <p class="text-xs text-slate-500">Administrator has exclusive authority to configure Company Name, tax ID, store address, and branding</p>
+              <p class="text-xs text-slate-500">Store Owner has exclusive authority to configure Company Name, tax ID, store address, and branding</p>
             </div>
           </div>
 
@@ -965,7 +1361,7 @@
             </div>
             <div>
               <h3 class="text-base font-bold text-slate-900">Master Product Catalog Management</h3>
-              <p class="text-xs text-slate-500">Administrator has the authority to add common products and configure unit pricing</p>
+              <p class="text-xs text-slate-500">Store Owner has the authority to add common products and configure unit pricing</p>
             </div>
           </div>
 
@@ -1022,7 +1418,7 @@
               </div>
               <div>
                 <h3 class="text-base font-bold text-slate-900">Configure Store Payment QR Code</h3>
-                <p class="text-xs text-slate-500">Administrator has the exclusive authority to change the store's UPI QR Code</p>
+                <p class="text-xs text-slate-500">Store Owner has the exclusive authority to change the store's UPI QR Code</p>
               </div>
             </div>
 
@@ -1098,7 +1494,7 @@
             </div>
             <div>
               <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wide">Provision Credentials for New Worker</h3>
-              <p class="text-xs text-slate-500">Only Administrator can onboard new workers who join later</p>
+              <p class="text-xs text-slate-500">Only Store Owner can onboard new workers who join later</p>
             </div>
           </div>
 
@@ -1288,7 +1684,7 @@
             </div>
             <div>
               <h3 class="text-base font-bold text-slate-900">Store Data Management & Purge Authority</h3>
-              <p class="text-xs text-slate-500">Administrator has exclusive authority to purge stored receipt records, reset transaction history, and factory reset this store's data.</p>
+              <p class="text-xs text-slate-500">Store Owner has exclusive authority to purge stored receipt records, reset transaction history, and factory reset this store's data.</p>
             </div>
           </div>
 
@@ -1408,7 +1804,7 @@
 
       <!-- Presentation Footer -->
       <div class="px-6 py-3 border-t border-slate-200 bg-slate-50 flex justify-between items-center text-xs text-slate-500">
-        <span>Prepared by Administrator • BillBuddy Executive Analytics</span>
+        <span>Prepared by Store Owner • BillBuddy Executive Analytics</span>
         <button id="btn-close-presentation-modal-footer" type="button" class="px-4 py-1.5 rounded-xl border border-slate-300 bg-white font-medium text-slate-700">Close</button>
       </div>
 
@@ -1806,6 +2202,83 @@
       <div class="grid grid-cols-2 gap-3 pt-2">
         <button id="btn-cancel-data-wipe" type="button" class="py-2.5 px-4 rounded-xl border border-slate-300 font-semibold text-slate-700 hover:bg-slate-50 text-xs sm:text-sm transition-colors">Cancel</button>
         <button id="btn-confirm-data-wipe" type="button" class="py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs sm:text-sm shadow-md transition-all">Yes, Clear Data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: ACCOUNT CREATED SUCCESSFULLY POPUP                -->
+  <!-- ======================================================== -->
+  <div id="owner-created-success-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-950/80 backdrop-blur-sm transition-opacity flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 text-center space-y-4 animate-in fade-in zoom-in-95 duration-200">
+      <div class="w-16 h-16 mx-auto rounded-3xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl shadow-lg shadow-emerald-500/20">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <div>
+        <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-purple-100 text-purple-800 mb-2">Onboarding Completed</span>
+        <h3 class="text-xl font-black text-slate-900 tracking-tight">Account Created Successfully! 🎉</h3>
+        <p class="text-xs text-slate-600 mt-1">Your Store Owner identity and isolated business workspace are fully provisioned.</p>
+      </div>
+      <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-left space-y-2 text-xs">
+        <div class="flex justify-between">
+          <span class="text-slate-500">Store Owner ID:</span>
+          <strong id="created-owner-id-display" class="font-mono text-purple-700 font-bold">@OWN-002</strong>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Company / Store:</span>
+          <strong id="created-store-name-display" class="text-slate-800 font-bold">Royal Mart</strong>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Assigned Role:</span>
+          <span class="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">STORE OWNER</span>
+        </div>
+      </div>
+      <button id="btn-enter-owner-console" type="button" class="w-full py-3.5 px-6 rounded-2xl font-bold text-white btn-modern-primary text-sm flex items-center justify-center gap-2 shadow-lg">
+        <span>Enter Owner Executive Console</span>
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: GOOGLE ONE-CLICK SIGN IN / SIGN UP                -->
+  <!-- ======================================================== -->
+  <div id="google-auth-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-950/75 backdrop-blur-sm transition-opacity flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
+            <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+          </svg>
+          <span class="text-sm font-bold text-slate-800">Sign in with Google</span>
+        </div>
+        <button id="btn-close-google-modal" type="button" class="text-slate-400 hover:text-slate-600 text-sm p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-500">Choose an account to continue to <strong>BillBuddy</strong></p>
+      <div class="space-y-2">
+        <button type="button" class="google-account-choice w-full p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-3 text-left" data-name="Demo Store Owner" data-email="owner.demo@gmail.com">
+          <div class="w-8 h-8 rounded-full bg-purple-600 text-white font-bold text-xs flex items-center justify-center">O</div>
+          <div class="flex-1 truncate">
+            <div class="text-xs font-bold text-slate-800">Demo Store Owner</div>
+            <div class="text-[11px] text-slate-500 truncate">owner.demo@gmail.com</div>
+          </div>
+        </button>
+        <button type="button" class="google-account-choice w-full p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-3 text-left" data-name="Alex Supermart" data-email="alex.supermart@gmail.com">
+          <div class="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center">A</div>
+          <div class="flex-1 truncate">
+            <div class="text-xs font-bold text-slate-800">Alex Supermart</div>
+            <div class="text-[11px] text-slate-500 truncate">alex.supermart@gmail.com</div>
+          </div>
+        </button>
+      </div>
+      <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+        <span>Simulated Google OAuth 2.0</span>
+        <span>Instant Access</span>
       </div>
     </div>
   </div>
