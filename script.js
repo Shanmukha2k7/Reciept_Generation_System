@@ -227,9 +227,21 @@
     btnSplashTabRegister: document.getElementById('btn-splash-tab-register'),
     splashPanelSignin: document.getElementById('splash-panel-signin'),
     splashPanelRegister: document.getElementById('splash-panel-register'),
+    signinCredentialsStep: document.getElementById('signin-credentials-step'),
     splashEmail: document.getElementById('splash-email'),
+    splashEmailError: document.getElementById('splash-email-error'),
+    splashEmailErrorText: document.getElementById('splash-email-error-text'),
     splashPassword: document.getElementById('splash-password'),
     btnSplashSignin: document.getElementById('btn-splash-signin'),
+    signinOtpStep: document.getElementById('signin-otp-step'),
+    btnSigninOtpBack: document.getElementById('btn-signin-otp-back'),
+    signinOtpEmailDisplay: document.getElementById('signin-otp-email-display'),
+    signinSimulatedOtpCode: document.getElementById('signin-simulated-otp-code'),
+    signinOtpInput: document.getElementById('signin-otp-input'),
+    signinOtpError: document.getElementById('signin-otp-error'),
+    signinOtpCountdown: document.getElementById('signin-otp-countdown'),
+    btnSigninResendOtp: document.getElementById('btn-signin-resend-otp'),
+    btnSigninVerifyOtp: document.getElementById('btn-signin-verify-otp'),
     splashTabSwitcher: document.getElementById('splash-tab-switcher'),
     btnSplashForgotPassword: document.getElementById('btn-splash-forgot-password'),
     splashPanelForgot: document.getElementById('splash-panel-forgot'),
@@ -244,6 +256,28 @@
     googleAuthModal: document.getElementById('google-auth-modal'),
     btnCloseGoogleModal: document.getElementById('btn-close-google-modal'),
     googleAccountChoices: document.querySelectorAll('.google-account-choice'),
+    googleStepEmail: document.getElementById('google-step-email'),
+    googleStepPassword: document.getElementById('google-step-password'),
+    googleStepOtp: document.getElementById('google-step-otp'),
+    googleInputEmail: document.getElementById('google-input-email'),
+    googleInputName: document.getElementById('google-input-name'),
+    googleEmailError: document.getElementById('google-email-error'),
+    googleEmailErrorText: document.getElementById('google-email-error-text'),
+    btnGoogleEmailNext: document.getElementById('btn-google-email-next'),
+    googleSelectedEmailDisplay: document.getElementById('google-selected-email-display'),
+    btnGoogleChangeEmail: document.getElementById('btn-google-change-email'),
+    googleInputPassword: document.getElementById('google-input-password'),
+    googlePasswordError: document.getElementById('google-password-error'),
+    btnGooglePasswordBack: document.getElementById('btn-google-password-back'),
+    btnGooglePasswordNext: document.getElementById('btn-google-password-next'),
+    googleOtpEmailDisplay: document.getElementById('google-otp-email-display'),
+    googleSimulatedOtpCode: document.getElementById('google-simulated-otp-code'),
+    googleInputOtp: document.getElementById('google-input-otp'),
+    googleOtpError: document.getElementById('google-otp-error'),
+    googleOtpCountdown: document.getElementById('google-otp-countdown'),
+    btnGoogleResendOtp: document.getElementById('btn-google-resend-otp'),
+    btnGoogleOtpBack: document.getElementById('btn-google-otp-back'),
+    btnGoogleVerifyOtp: document.getElementById('btn-google-verify-otp'),
 
     // Owner Registration Wizard Stepper & Steps
     stepIndicator1: document.getElementById('step-indicator-1'),
@@ -269,6 +303,8 @@
     ownerIdSuggestionsContainer: document.getElementById('owner-id-suggestions-container'),
     ownerIdSuggestionsList: document.getElementById('owner-id-suggestions-list'),
     regOwnerEmail: document.getElementById('reg-owner-email'),
+    regOwnerEmailError: document.getElementById('reg-owner-email-error'),
+    regOwnerEmailErrorText: document.getElementById('reg-owner-email-error-text'),
     regOwnerPassword: document.getElementById('reg-owner-password'),
     regStoreName: document.getElementById('reg-store-name'),
     regStoreTax: document.getElementById('reg-store-tax'),
@@ -785,21 +821,22 @@
       const email = (DOM.forgotAdminEmail.value || '').trim().toLowerCase();
       const captchaInput = (DOM.forgotCaptchaInput.value || '').trim();
 
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        Toast.show('Please enter a valid Admin email address', 'warning');
+      const emailCheck = validateEmailAddress(email, false);
+      if (!emailCheck.valid) {
+        Toast.show('Invalid email! Please enter a valid Owner email address.', 'error');
         return false;
       }
 
       const users = AuthService.getUsers();
-      const user = users.find(u => u.email && u.email.toLowerCase() === email);
+      const user = users.find(u => u.email && u.email.toLowerCase() === emailCheck.email);
 
       if (!user) {
-        Toast.show(`No account found matching email "${email}"!`, 'error');
+        Toast.show(`No account found matching email "${emailCheck.email}"!`, 'error');
         return false;
       }
 
-      if (user.role !== 'admin') {
-        Toast.show('Password self-recovery is restricted to Admin accounts. Cashiers must contact their Store Admin.', 'warning');
+      if (user.role !== 'owner' && user.role !== 'admin') {
+        Toast.show('Password self-recovery is restricted to Owner accounts. Cashiers must contact their Store Owner.', 'warning');
         return false;
       }
 
@@ -1144,11 +1181,17 @@
         OwnerIdService.checkAvailability(id);
         return false;
       }
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        Toast.show('Please enter a valid login email address', 'warning');
+      const emailCheck = validateEmailAddress(email, false);
+      if (!emailCheck.valid) {
+        if (DOM.regOwnerEmailError) {
+          if (DOM.regOwnerEmailErrorText) DOM.regOwnerEmailErrorText.textContent = emailCheck.reason;
+          DOM.regOwnerEmailError.classList.remove('hidden');
+        }
+        Toast.show(emailCheck.reason, 'error');
         return false;
       }
-      if (users.some(u => u.email && u.email.toLowerCase() === email)) {
+      if (DOM.regOwnerEmailError) DOM.regOwnerEmailError.classList.add('hidden');
+      if (users.some(u => u.email && u.email.toLowerCase() === emailCheck.email)) {
         Toast.show('An account with this email address already exists', 'error');
         return false;
       }
@@ -1159,7 +1202,7 @@
 
       this.state.ownerName = name;
       this.state.ownerId = id;
-      this.state.email = email;
+      this.state.email = emailCheck.email;
       this.state.password = password;
       return true;
     },
@@ -1367,87 +1410,322 @@
   };
 
   // ============================================================================
-  // 6e. GOOGLE ONE-CLICK AUTHENTICATION SERVICE (SIMULATOR)
+  // 6e. EMAIL VALIDATOR & GOOGLE AUTHENTICATION SERVICE (EMAIL -> PASSWORD -> OTP)
   // ============================================================================
+  const TYPO_EMAIL_DOMAINS = [
+    'gmai.com', 'gmial.com', 'gamil.com', 'gnail.com', 'gmail.c', 'gmail.co',
+    'gmail.con', 'gmail.om', 'yaho.com', 'yahoo.c', 'hotmai.com', 'outlok.com'
+  ];
+
+  function validateEmailAddress(rawEmail, requireGoogle = false) {
+    const email = (rawEmail || '').trim().toLowerCase();
+    if (!email) {
+      return { valid: false, email: '', reason: 'Invalid email! Email address cannot be empty.' };
+    }
+    if (email.includes('..')) {
+      return { valid: false, email, reason: 'Invalid email! Address cannot contain consecutive dots.' };
+    }
+    const strictRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!strictRegex.test(email)) {
+      return { valid: false, email, reason: 'Invalid email! Please check the email format (e.g. name@gmail.com).' };
+    }
+    const parts = email.split('@');
+    const localPart = parts[0];
+    const domain = parts[1];
+    if (!localPart || localPart.startsWith('.') || localPart.endsWith('.')) {
+      return { valid: false, email, reason: 'Invalid email! Username part cannot start or end with a dot.' };
+    }
+    if (!domain || domain.startsWith('.') || domain.endsWith('.') || domain.startsWith('-') || domain.endsWith('-')) {
+      return { valid: false, email, reason: 'Invalid email! Email domain format is invalid.' };
+    }
+    if (TYPO_EMAIL_DOMAINS.includes(domain)) {
+      return { valid: false, email, reason: `Invalid email domain "@${domain}"! Please check for typos.` };
+    }
+    if (requireGoogle) {
+      const users = typeof AuthService !== 'undefined' ? AuthService.getUsers() : [];
+      const isExistingUser = users.some(u => u.email && u.email.toLowerCase() === email);
+      if (domain !== 'gmail.com' && domain !== 'googlemail.com' && !isExistingUser) {
+        return {
+          valid: false,
+          email,
+          reason: 'Invalid email! Please enter a valid Google email (@gmail.com or @googlemail.com).'
+        };
+      }
+    }
+    return { valid: true, email };
+  }
+
+  function showInlineError(containerEl, textEl, message) {
+    if (!containerEl) return;
+    if (!message) {
+      containerEl.classList.add('hidden');
+      return;
+    }
+    const target = textEl || containerEl.querySelector('span') || containerEl;
+    target.textContent = message;
+    containerEl.classList.remove('hidden');
+  }
+
   const GoogleAuthService = {
     mode: 'signin', // 'signin' or 'signup'
+    step: 1,
+    pendingEmail: '',
+    pendingName: '',
+    pendingPassword: '',
+    otp: null,
+    otpExpiresAt: 0,
+    countdownTimer: null,
+    resendTimer: null,
+    resendCooldown: 0,
 
     openModal(mode = 'signin') {
       this.mode = mode;
+      this.pendingEmail = '';
+      this.pendingName = '';
+      this.pendingPassword = '';
+      this.otp = null;
+      this.clearTimers();
+
+      if (DOM.googleInputEmail) DOM.googleInputEmail.value = '';
+      if (DOM.googleInputName) DOM.googleInputName.value = '';
+      if (DOM.googleInputPassword) DOM.googleInputPassword.value = '';
+      if (DOM.googleInputOtp) DOM.googleInputOtp.value = '';
+
+      showInlineError(DOM.googleEmailError, DOM.googleEmailErrorText, '');
+      showInlineError(DOM.googlePasswordError, null, '');
+      showInlineError(DOM.googleOtpError, null, '');
+
+      this.goToStep(1);
       if (DOM.googleAuthModal) DOM.googleAuthModal.classList.remove('hidden');
+      if (DOM.googleInputEmail) setTimeout(() => DOM.googleInputEmail.focus(), 60);
     },
 
     closeModal() {
+      this.clearTimers();
       if (DOM.googleAuthModal) DOM.googleAuthModal.classList.add('hidden');
     },
 
-    selectAccount(name, email) {
+    goToStep(step) {
+      this.step = step;
+      if (DOM.googleStepEmail) DOM.googleStepEmail.classList.toggle('hidden', step !== 1);
+      if (DOM.googleStepPassword) DOM.googleStepPassword.classList.toggle('hidden', step !== 2);
+      if (DOM.googleStepOtp) DOM.googleStepOtp.classList.toggle('hidden', step !== 3);
+    },
+
+    deriveNameFromEmail(email) {
+      const local = (email || '').split('@')[0] || 'Google User';
+      return local
+        .replace(/[._-]+/g, ' ')
+        .trim()
+        .split(/\s+/)
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ') || 'Google Owner';
+    },
+
+    submitEmailStep() {
+      const rawEmail = (DOM.googleInputEmail ? DOM.googleInputEmail.value : '').trim();
+      const rawName = (DOM.googleInputName ? DOM.googleInputName.value : '').trim();
+
+      const emailCheck = validateEmailAddress(rawEmail, true);
+      if (!emailCheck.valid) {
+        showInlineError(DOM.googleEmailError, DOM.googleEmailErrorText, emailCheck.reason);
+        Toast.show(emailCheck.reason, 'error');
+        return false;
+      }
+
+      showInlineError(DOM.googleEmailError, DOM.googleEmailErrorText, '');
+      this.pendingEmail = emailCheck.email;
+
+      const users = AuthService.getUsers();
+      const existing = users.find(u => u.email && u.email.toLowerCase() === this.pendingEmail);
+      this.pendingName = rawName || (existing ? existing.name : this.deriveNameFromEmail(this.pendingEmail));
+
+      if (DOM.googleSelectedEmailDisplay) DOM.googleSelectedEmailDisplay.textContent = this.pendingEmail;
+      if (DOM.googleInputPassword) DOM.googleInputPassword.value = '';
+      showInlineError(DOM.googlePasswordError, null, '');
+
+      this.goToStep(2);
+      if (DOM.googleInputPassword) setTimeout(() => DOM.googleInputPassword.focus(), 60);
+      return true;
+    },
+
+    submitPasswordStep() {
+      const password = DOM.googleInputPassword ? DOM.googleInputPassword.value : '';
+      if (!password || password.length < 6) {
+        const msg = 'Please enter your Google account password (minimum 6 characters).';
+        showInlineError(DOM.googlePasswordError, null, msg);
+        Toast.show(msg, 'warning');
+        return false;
+      }
+
+      const users = AuthService.getUsers();
+      const existing = users.find(u => u.email && u.email.toLowerCase() === this.pendingEmail);
+      if (existing && this.mode === 'signin' && existing.passwordHash !== sha256(password)) {
+        const msg = 'Incorrect password for this account. Please try again.';
+        showInlineError(DOM.googlePasswordError, null, msg);
+        Toast.show(msg, 'error');
+        return false;
+      }
+
+      showInlineError(DOM.googlePasswordError, null, '');
+      this.pendingPassword = password;
+
+      this.otp = String(Math.floor(100000 + Math.random() * 900000));
+      this.otpExpiresAt = Date.now() + 120 * 1000;
+
+      if (DOM.googleOtpEmailDisplay) DOM.googleOtpEmailDisplay.textContent = this.pendingEmail;
+      if (DOM.googleSimulatedOtpCode) DOM.googleSimulatedOtpCode.textContent = this.otp;
+      if (DOM.googleInputOtp) DOM.googleInputOtp.value = '';
+      showInlineError(DOM.googleOtpError, null, '');
+
+      this.goToStep(3);
+      this.startTimers();
+      Toast.show(`Verification OTP sent to ${this.pendingEmail}! Simulated OTP: ${this.otp}`, 'info');
+      if (DOM.googleInputOtp) setTimeout(() => DOM.googleInputOtp.focus(), 60);
+      return true;
+    },
+
+    resendOtp() {
+      if (!this.pendingEmail) return;
+      this.otp = String(Math.floor(100000 + Math.random() * 900000));
+      this.otpExpiresAt = Date.now() + 120 * 1000;
+      if (DOM.googleSimulatedOtpCode) DOM.googleSimulatedOtpCode.textContent = this.otp;
+      if (DOM.googleInputOtp) DOM.googleInputOtp.value = '';
+      showInlineError(DOM.googleOtpError, null, '');
+      this.startTimers();
+      Toast.show(`New OTP sent to ${this.pendingEmail}: ${this.otp}`, 'info');
+    },
+
+    startTimers() {
+      this.clearTimers();
+
+      const updateCountdown = () => {
+        const remaining = Math.max(0, Math.floor((this.otpExpiresAt - Date.now()) / 1000));
+        if (DOM.googleOtpCountdown) {
+          if (remaining <= 0) {
+            DOM.googleOtpCountdown.textContent = 'Expired';
+          } else {
+            const mins = String(Math.floor(remaining / 60)).padStart(2, '0');
+            const secs = String(remaining % 60).padStart(2, '0');
+            DOM.googleOtpCountdown.textContent = `${mins}:${secs}`;
+          }
+        }
+        if (remaining <= 0 && this.countdownTimer) {
+          clearInterval(this.countdownTimer);
+          this.countdownTimer = null;
+        }
+      };
+
+      updateCountdown();
+      this.countdownTimer = setInterval(updateCountdown, 1000);
+
+      this.resendCooldown = 30;
+      const updateResendBtn = () => {
+        if (!DOM.btnGoogleResendOtp) return;
+        if (this.resendCooldown > 0) {
+          DOM.btnGoogleResendOtp.disabled = true;
+          DOM.btnGoogleResendOtp.textContent = `Resend OTP (${this.resendCooldown}s)`;
+        } else {
+          DOM.btnGoogleResendOtp.disabled = false;
+          DOM.btnGoogleResendOtp.textContent = 'Resend OTP';
+          if (this.resendTimer) {
+            clearInterval(this.resendTimer);
+            this.resendTimer = null;
+          }
+        }
+      };
+
+      updateResendBtn();
+      this.resendTimer = setInterval(() => {
+        this.resendCooldown = Math.max(0, this.resendCooldown - 1);
+        updateResendBtn();
+      }, 1000);
+    },
+
+    clearTimers() {
+      if (this.countdownTimer) {
+        clearInterval(this.countdownTimer);
+        this.countdownTimer = null;
+      }
+      if (this.resendTimer) {
+        clearInterval(this.resendTimer);
+        this.resendTimer = null;
+      }
+    },
+
+    verifyOtpStep() {
+      const entered = (DOM.googleInputOtp ? DOM.googleInputOtp.value : '').trim();
+      if (!this.otp || Date.now() > this.otpExpiresAt) {
+        const msg = 'OTP expired! Please click Resend OTP to generate a new code.';
+        showInlineError(DOM.googleOtpError, null, msg);
+        Toast.show(msg, 'error');
+        return false;
+      }
+      if (!/^\d{6}$/.test(entered) || entered !== this.otp) {
+        const msg = 'Invalid OTP code! Please enter the exact 6-digit verification code.';
+        showInlineError(DOM.googleOtpError, null, msg);
+        Toast.show(msg, 'error');
+        return false;
+      }
+
+      showInlineError(DOM.googleOtpError, null, '');
+      this.clearTimers();
       this.closeModal();
 
       if (this.mode === 'signup') {
-        // Auto-fill wizard step 1
-        if (DOM.regOwnerName) DOM.regOwnerName.value = name;
-        if (DOM.regOwnerEmail) DOM.regOwnerEmail.value = email;
-        const cleanId = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_').toUpperCase();
+        if (DOM.regOwnerName) DOM.regOwnerName.value = this.pendingName;
+        if (DOM.regOwnerEmail) DOM.regOwnerEmail.value = this.pendingEmail;
+        showInlineError(DOM.regOwnerEmailError, DOM.regOwnerEmailErrorText, '');
+        const cleanId = this.pendingEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_').toUpperCase();
         if (DOM.regOwnerId) {
           DOM.regOwnerId.value = cleanId;
           OwnerIdService.checkAvailability(cleanId);
         }
-        if (DOM.regOwnerPassword && !DOM.regOwnerPassword.value) {
-          DOM.regOwnerPassword.value = 'Google@2026';
+        if (DOM.regOwnerPassword) {
+          DOM.regOwnerPassword.value = this.pendingPassword;
         }
-        Toast.show(`Google account "${email}" linked! Complete your store details.`, 'info');
-      } else {
-        // Check if user exists or log in demo
-        const users = AuthService.getUsers();
-        let user = users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
-        if (!user) {
-          // Auto-provision demo owner
-          const id = email.split('@')[0].toUpperCase();
-          user = {
-            workerId: id,
-            adminId: id,
-            name: name,
-            email: email,
-            role: 'owner',
-            passwordHash: sha256('Google@2026'),
-            store: {
-              name: `${name}'s Store`,
-              taxId: 'GSTIN-GOOGLE-VERIFIED',
-              address: 'Main Commerce Hub, Tech City',
-              phone: '+91 98765 00000',
-              logo: null
-            },
-            qrConfig: {
-              upiId: `${id.toLowerCase()}@okaxis`,
-              merchantName: name,
-              notes: 'Google Pay Verified Merchant',
-              customQrImage: null
-            }
-          };
-          users.push(user);
-          localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-        }
-
-        AppState.currentUser = {
-          workerId: user.workerId,
-          adminId: user.adminId || user.workerId,
-          name: user.name,
-          email: user.email,
-          role: user.role
-        };
-        AppState.store = JSON.parse(JSON.stringify(user.store || AppState.store));
-        AppState.qrConfig = JSON.parse(JSON.stringify(user.qrConfig || AppState.qrConfig));
-        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(AppState.currentUser));
-
-        syncStateToForm();
-        ReceiptRenderer.render();
-
-        if (DOM.splashAuthOverlay) DOM.splashAuthOverlay.classList.add('hidden');
-        AuthService.applyUserInterface();
-        Toast.show(`Signed in with Google as ${user.name}!`, 'success');
-        if (window.confetti) confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+        Toast.show(`Google account "${this.pendingEmail}" verified via OTP! Complete your store details.`, 'success');
+        return true;
       }
+
+      const users = AuthService.getUsers();
+      let user = users.find(u => u.email && u.email.toLowerCase() === this.pendingEmail);
+      if (!user) {
+        const baseId = this.pendingEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').toUpperCase().slice(0, 12) || 'GOOGLE';
+        let id = baseId;
+        let suffix = 1;
+        while (users.some(u => u.workerId && u.workerId.toUpperCase() === id)) {
+          id = `${baseId}${suffix}`;
+          suffix++;
+        }
+        user = {
+          workerId: id,
+          adminId: id,
+          name: this.pendingName,
+          email: this.pendingEmail,
+          role: 'owner',
+          passwordHash: sha256(this.pendingPassword),
+          store: {
+            name: `${this.pendingName}'s Store`,
+            taxId: 'GSTIN-GOOGLE-VERIFIED',
+            address: 'Main Commerce Hub, Tech City',
+            phone: '+91 98765 00000',
+            logo: null
+          },
+          qrConfig: {
+            upiId: `${id.toLowerCase()}@okaxis`,
+            merchantName: this.pendingName,
+            notes: 'Google Pay Verified Merchant',
+            customQrImage: null
+          }
+        };
+        users.push(user);
+        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+      }
+
+      AuthService.completeVerifiedLogin(user, `Signed in with Google as ${user.name}!`);
+      if (window.confetti) confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+      return true;
     }
   };
 
@@ -1522,17 +1800,34 @@
       this.promptSplashAuth();
     },
 
+    pendingLoginUser: null,
+    signinOtp: null,
+    signinOtpExpiresAt: 0,
+    signinCountdownTimer: null,
+    signinResendTimer: null,
+    signinResendCooldown: 0,
+
     promptSplashAuth() {
       localStorage.removeItem(STORAGE_KEYS.SESSION);
       AppState.currentUser = null;
+      this.clearSigninOtpTimers();
+      this.pendingLoginUser = null;
+      this.signinOtp = null;
       if (DOM.splashEmail) DOM.splashEmail.value = '';
       if (DOM.splashPassword) DOM.splashPassword.value = '';
+      if (DOM.signinCaptchaInput) DOM.signinCaptchaInput.value = '';
+      if (DOM.signinOtpInput) DOM.signinOtpInput.value = '';
+      showInlineError(DOM.splashEmailError, DOM.splashEmailErrorText, '');
+      showInlineError(DOM.signinOtpError, null, '');
+      if (DOM.signinCredentialsStep) DOM.signinCredentialsStep.classList.remove('hidden');
+      if (DOM.signinOtpStep) DOM.signinOtpStep.classList.add('hidden');
       if (DOM.splashTabSwitcher) DOM.splashTabSwitcher.classList.remove('hidden');
       if (DOM.splashPanelForgot) DOM.splashPanelForgot.classList.add('hidden');
       if (DOM.splashPanelSignin) DOM.splashPanelSignin.classList.remove('hidden');
       if (DOM.splashPanelRegister) DOM.splashPanelRegister.classList.add('hidden');
       if (typeof ForgotService !== 'undefined') ForgotService.clearTimers();
       if (typeof OwnerWizardService !== 'undefined') OwnerWizardService.clearTimers();
+      if (typeof GoogleAuthService !== 'undefined') GoogleAuthService.clearTimers();
       if (typeof CaptchaService !== 'undefined') CaptchaService.refreshSplash();
       if (DOM.btnSplashTabSignin && DOM.btnSplashTabRegister) {
         DOM.btnSplashTabSignin.className = 'flex-1 py-2.5 px-3 rounded-xl bg-white text-slate-900 shadow-sm transition-all flex items-center justify-center gap-2 font-bold';
@@ -1557,9 +1852,37 @@
       const cleanId = rawId.replace(/^@+/, '');
       const lowerId = rawId.toLowerCase();
 
+      showInlineError(DOM.splashEmailError, DOM.splashEmailErrorText, '');
+
       if (!rawId) {
-        Toast.show('Please enter your Email address or User ID', 'warning');
+        const msg = 'Please enter your Email address or User ID';
+        showInlineError(DOM.splashEmailError, DOM.splashEmailErrorText, msg);
+        Toast.show(msg, 'warning');
         return false;
+      }
+
+      const users = this.getUsers();
+      // Supports login via User ID / Handle (e.g. @alex, OWN-001, WRK-101) OR Email address
+      let user = users.find(u =>
+        (u.workerId && (u.workerId.toUpperCase() === rawId.toUpperCase() || u.workerId.toUpperCase() === cleanId.toUpperCase())) ||
+        (u.email && (
+          u.email.toLowerCase() === lowerId ||
+          u.email.toLowerCase().replace('@billbuddy.com', '@smartreceipt.com') === lowerId ||
+          u.email.toLowerCase().replace('@smartreceipt.com', '@billbuddy.com') === lowerId
+        ))
+      );
+
+      // If input does not match a known User ID or existing user, validate strictly as an email address
+      const matchedWorkerId = user && user.workerId && (user.workerId.toUpperCase() === rawId.toUpperCase() || user.workerId.toUpperCase() === cleanId.toUpperCase());
+      let validatedEmail = null;
+      if (!matchedWorkerId) {
+        const emailCheck = validateEmailAddress(rawId, false);
+        if (!emailCheck.valid) {
+          showInlineError(DOM.splashEmailError, DOM.splashEmailErrorText, emailCheck.reason);
+          Toast.show(emailCheck.reason, 'error');
+          return false;
+        }
+        validatedEmail = emailCheck.email;
       }
 
       if (!passwordInput) {
@@ -1580,28 +1903,180 @@
         return false;
       }
 
-      const users = this.getUsers();
-      // Supports login via User ID / Handle (e.g. @alex, OWN-001, WRK-101) OR Email address
-      const user = users.find(u => 
-        (u.workerId && (u.workerId.toUpperCase() === rawId.toUpperCase() || u.workerId.toUpperCase() === cleanId.toUpperCase())) ||
-        (u.email && (
-          u.email.toLowerCase() === lowerId ||
-          u.email.toLowerCase().replace('@billbuddy.com', '@smartreceipt.com') === lowerId ||
-          u.email.toLowerCase().replace('@smartreceipt.com', '@billbuddy.com') === lowerId
-        ))
-      );
-
       if (!user) {
-        Toast.show('No account found matching this User ID / Email.', 'error');
-        return false;
-      }
-
-      if (user.passwordHash !== sha256(passwordInput)) {
+        if (validatedEmail && (validatedEmail.endsWith('@gmail.com') || validatedEmail.endsWith('@googlemail.com'))) {
+          if (passwordInput.length < 6) {
+            Toast.show('Password must be at least 6 characters for a Google email account.', 'warning');
+            return false;
+          }
+          const baseId = validatedEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').toUpperCase().slice(0, 12) || 'OWNER';
+          let id = baseId;
+          let suffix = 1;
+          while (users.some(u => u.workerId && u.workerId.toUpperCase() === id)) {
+            id = `${baseId}${suffix}`;
+            suffix++;
+          }
+          const derivedName = GoogleAuthService.deriveNameFromEmail(validatedEmail);
+          user = {
+            isPendingGoogleOwner: true,
+            workerId: id,
+            adminId: id,
+            name: derivedName,
+            email: validatedEmail,
+            role: 'owner',
+            passwordHash: sha256(passwordInput),
+            store: {
+              name: `${derivedName}'s Store`,
+              taxId: 'GSTIN-GOOGLE-VERIFIED',
+              address: 'Main Commerce Hub, Tech City',
+              phone: '+91 98765 00000',
+              logo: null
+            },
+            qrConfig: {
+              upiId: `${id.toLowerCase()}@okaxis`,
+              merchantName: derivedName,
+              notes: 'Verified Owner Merchant',
+              customQrImage: null
+            }
+          };
+        } else {
+          const msg = 'No account found matching this Email or User ID.';
+          showInlineError(DOM.splashEmailError, DOM.splashEmailErrorText, msg);
+          Toast.show(msg, 'error');
+          return false;
+        }
+      } else if (user.passwordHash !== sha256(passwordInput)) {
         Toast.show('Incorrect password. Access denied.', 'error');
         return false;
       }
 
+      // Require email OTP verification after password & captcha succeed
+      this.startSigninOtpStep(user);
+      return true;
+    },
+
+    startSigninOtpStep(user) {
+      this.pendingLoginUser = user;
+      this.signinOtp = String(Math.floor(100000 + Math.random() * 900000));
+      this.signinOtpExpiresAt = Date.now() + 120 * 1000;
+
+      if (DOM.signinCredentialsStep) DOM.signinCredentialsStep.classList.add('hidden');
+      if (DOM.signinOtpStep) DOM.signinOtpStep.classList.remove('hidden');
+      if (DOM.signinOtpEmailDisplay) DOM.signinOtpEmailDisplay.textContent = user.email || `${user.workerId}@billbuddy.com`;
+      if (DOM.signinSimulatedOtpCode) DOM.signinSimulatedOtpCode.textContent = this.signinOtp;
+      if (DOM.signinOtpInput) DOM.signinOtpInput.value = '';
+      showInlineError(DOM.signinOtpError, null, '');
+
+      this.startSigninOtpTimers();
+      Toast.show(`OTP sent to ${user.email || user.workerId}! Simulated OTP: ${this.signinOtp}`, 'info');
+      if (DOM.signinOtpInput) setTimeout(() => DOM.signinOtpInput.focus(), 60);
+    },
+
+    resendSigninOtp() {
+      if (!this.pendingLoginUser) return;
+      this.signinOtp = String(Math.floor(100000 + Math.random() * 900000));
+      this.signinOtpExpiresAt = Date.now() + 120 * 1000;
+      if (DOM.signinSimulatedOtpCode) DOM.signinSimulatedOtpCode.textContent = this.signinOtp;
+      if (DOM.signinOtpInput) DOM.signinOtpInput.value = '';
+      showInlineError(DOM.signinOtpError, null, '');
+      this.startSigninOtpTimers();
+      Toast.show(`New OTP sent to ${this.pendingLoginUser.email}: ${this.signinOtp}`, 'info');
+    },
+
+    startSigninOtpTimers() {
+      this.clearSigninOtpTimers();
+
+      const updateCountdown = () => {
+        const remaining = Math.max(0, Math.floor((this.signinOtpExpiresAt - Date.now()) / 1000));
+        if (DOM.signinOtpCountdown) {
+          if (remaining <= 0) {
+            DOM.signinOtpCountdown.textContent = 'Expired';
+          } else {
+            const mins = String(Math.floor(remaining / 60)).padStart(2, '0');
+            const secs = String(remaining % 60).padStart(2, '0');
+            DOM.signinOtpCountdown.textContent = `${mins}:${secs}`;
+          }
+        }
+        if (remaining <= 0 && this.signinCountdownTimer) {
+          clearInterval(this.signinCountdownTimer);
+          this.signinCountdownTimer = null;
+        }
+      };
+
+      updateCountdown();
+      this.signinCountdownTimer = setInterval(updateCountdown, 1000);
+
+      this.signinResendCooldown = 30;
+      const updateResendBtn = () => {
+        if (!DOM.btnSigninResendOtp) return;
+        if (this.signinResendCooldown > 0) {
+          DOM.btnSigninResendOtp.disabled = true;
+          DOM.btnSigninResendOtp.textContent = `Resend OTP (${this.signinResendCooldown}s)`;
+        } else {
+          DOM.btnSigninResendOtp.disabled = false;
+          DOM.btnSigninResendOtp.textContent = 'Resend OTP';
+          if (this.signinResendTimer) {
+            clearInterval(this.signinResendTimer);
+            this.signinResendTimer = null;
+          }
+        }
+      };
+
+      updateResendBtn();
+      this.signinResendTimer = setInterval(() => {
+        this.signinResendCooldown = Math.max(0, this.signinResendCooldown - 1);
+        updateResendBtn();
+      }, 1000);
+    },
+
+    clearSigninOtpTimers() {
+      if (this.signinCountdownTimer) {
+        clearInterval(this.signinCountdownTimer);
+        this.signinCountdownTimer = null;
+      }
+      if (this.signinResendTimer) {
+        clearInterval(this.signinResendTimer);
+        this.signinResendTimer = null;
+      }
+    },
+
+    verifySigninOtp() {
+      const entered = (DOM.signinOtpInput ? DOM.signinOtpInput.value : '').trim();
+      if (!this.pendingLoginUser || !this.signinOtp || Date.now() > this.signinOtpExpiresAt) {
+        const msg = 'OTP expired! Please click Resend OTP to generate a new verification code.';
+        showInlineError(DOM.signinOtpError, null, msg);
+        Toast.show(msg, 'error');
+        return false;
+      }
+      if (!/^\d{6}$/.test(entered) || entered !== this.signinOtp) {
+        const msg = 'Invalid OTP code! Please enter the exact 6-digit verification code.';
+        showInlineError(DOM.signinOtpError, null, msg);
+        Toast.show(msg, 'error');
+        return false;
+      }
+
+      showInlineError(DOM.signinOtpError, null, '');
+      this.clearSigninOtpTimers();
+
+      const verifiedUser = { ...this.pendingLoginUser };
+      if (verifiedUser.isPendingGoogleOwner) {
+        delete verifiedUser.isPendingGoogleOwner;
+        const users = this.getUsers();
+        if (!users.some(u => u.email && u.email.toLowerCase() === verifiedUser.email.toLowerCase())) {
+          users.push(verifiedUser);
+          localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+        }
+      }
+
+      this.pendingLoginUser = null;
+      this.signinOtp = null;
+      this.completeVerifiedLogin(verifiedUser);
+      return true;
+    },
+
+    completeVerifiedLogin(user, customWelcomeMsg = '') {
       const isOwner = user.role === 'owner' || user.role === 'admin';
+      const users = this.getUsers();
 
       // Session established
       AppState.currentUser = {
@@ -1628,12 +2103,15 @@
         }
       }
 
+      if (DOM.signinCredentialsStep) DOM.signinCredentialsStep.classList.remove('hidden');
+      if (DOM.signinOtpStep) DOM.signinOtpStep.classList.add('hidden');
+
       syncStateToForm();
       ReceiptRenderer.render();
 
       DOM.splashAuthOverlay.classList.add('hidden');
       this.applyUserInterface();
-      Toast.show(`Welcome, ${user.name}! (@${user.workerId})`, 'success');
+      Toast.show(customWelcomeMsg || `Welcome, ${user.name}! (@${user.workerId})`, 'success');
       return true;
     },
 
@@ -4138,7 +4616,50 @@
       });
     }
 
-    // Google Sign-In & Sign-Up Buttons & Modal
+    // Sign-In Email & OTP Listeners
+    if (DOM.splashEmail) {
+      DOM.splashEmail.addEventListener('input', () => {
+        showInlineError(DOM.splashEmailError, DOM.splashEmailErrorText, '');
+      });
+    }
+    if (DOM.btnSigninOtpBack) {
+      DOM.btnSigninOtpBack.addEventListener('click', () => {
+        AuthService.clearSigninOtpTimers();
+        if (DOM.signinOtpStep) DOM.signinOtpStep.classList.add('hidden');
+        if (DOM.signinCredentialsStep) DOM.signinCredentialsStep.classList.remove('hidden');
+        CaptchaService.refreshSignin();
+      });
+    }
+    if (DOM.btnSigninResendOtp) {
+      DOM.btnSigninResendOtp.addEventListener('click', () => AuthService.resendSigninOtp());
+    }
+    if (DOM.btnSigninVerifyOtp) {
+      DOM.btnSigninVerifyOtp.addEventListener('click', () => AuthService.verifySigninOtp());
+    }
+    if (DOM.signinOtpInput) {
+      DOM.signinOtpInput.addEventListener('input', () => showInlineError(DOM.signinOtpError, null, ''));
+      DOM.signinOtpInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          AuthService.verifySigninOtp();
+        }
+      });
+    }
+    if (DOM.regOwnerEmail) {
+      DOM.regOwnerEmail.addEventListener('input', () => {
+        showInlineError(DOM.regOwnerEmailError, DOM.regOwnerEmailErrorText, '');
+      });
+      DOM.regOwnerEmail.addEventListener('blur', () => {
+        const val = (DOM.regOwnerEmail.value || '').trim();
+        if (!val) return;
+        const check = validateEmailAddress(val, false);
+        if (!check.valid) {
+          showInlineError(DOM.regOwnerEmailError, DOM.regOwnerEmailErrorText, check.reason);
+        }
+      });
+    }
+
+    // Google Sign-In & Sign-Up Buttons & 3-Step Modal (Email -> Password -> OTP)
     if (DOM.btnGoogleSignin) {
       DOM.btnGoogleSignin.addEventListener('click', () => GoogleAuthService.openModal('signin'));
     }
@@ -4148,10 +4669,74 @@
     if (DOM.btnCloseGoogleModal) {
       DOM.btnCloseGoogleModal.addEventListener('click', () => GoogleAuthService.closeModal());
     }
+    if (DOM.googleInputEmail) {
+      DOM.googleInputEmail.addEventListener('input', () => {
+        showInlineError(DOM.googleEmailError, DOM.googleEmailErrorText, '');
+      });
+      DOM.googleInputEmail.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          GoogleAuthService.submitEmailStep();
+        }
+      });
+    }
+    if (DOM.googleInputName) {
+      DOM.googleInputName.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          GoogleAuthService.submitEmailStep();
+        }
+      });
+    }
+    if (DOM.btnGoogleEmailNext) {
+      DOM.btnGoogleEmailNext.addEventListener('click', () => GoogleAuthService.submitEmailStep());
+    }
+    if (DOM.btnGoogleChangeEmail) {
+      DOM.btnGoogleChangeEmail.addEventListener('click', () => GoogleAuthService.goToStep(1));
+    }
+    if (DOM.btnGooglePasswordBack) {
+      DOM.btnGooglePasswordBack.addEventListener('click', () => GoogleAuthService.goToStep(1));
+    }
+    if (DOM.googleInputPassword) {
+      DOM.googleInputPassword.addEventListener('input', () => showInlineError(DOM.googlePasswordError, null, ''));
+      DOM.googleInputPassword.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          GoogleAuthService.submitPasswordStep();
+        }
+      });
+    }
+    if (DOM.btnGooglePasswordNext) {
+      DOM.btnGooglePasswordNext.addEventListener('click', () => GoogleAuthService.submitPasswordStep());
+    }
+    if (DOM.btnGoogleOtpBack) {
+      DOM.btnGoogleOtpBack.addEventListener('click', () => {
+        GoogleAuthService.clearTimers();
+        GoogleAuthService.goToStep(2);
+      });
+    }
+    if (DOM.btnGoogleResendOtp) {
+      DOM.btnGoogleResendOtp.addEventListener('click', () => GoogleAuthService.resendOtp());
+    }
+    if (DOM.btnGoogleVerifyOtp) {
+      DOM.btnGoogleVerifyOtp.addEventListener('click', () => GoogleAuthService.verifyOtpStep());
+    }
+    if (DOM.googleInputOtp) {
+      DOM.googleInputOtp.addEventListener('input', () => showInlineError(DOM.googleOtpError, null, ''));
+      DOM.googleInputOtp.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          GoogleAuthService.verifyOtpStep();
+        }
+      });
+    }
     if (DOM.googleAccountChoices) {
       DOM.googleAccountChoices.forEach(choice => {
         choice.addEventListener('click', () => {
-          GoogleAuthService.selectAccount(choice.dataset.name, choice.dataset.email);
+          if (DOM.googleInputEmail) DOM.googleInputEmail.value = choice.dataset.email || '';
+          if (DOM.googleInputName) DOM.googleInputName.value = choice.dataset.name || '';
+          showInlineError(DOM.googleEmailError, DOM.googleEmailErrorText, '');
+          GoogleAuthService.submitEmailStep();
         });
       });
     }

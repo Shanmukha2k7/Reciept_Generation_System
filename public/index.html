@@ -106,49 +106,99 @@
         </div>
 
         <form id="splash-auth-form" autocomplete="off" onsubmit="return false;" class="space-y-3.5">
-          <div>
-            <label for="splash-email" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Address or User ID *</label>
-            <div class="relative">
-              <input type="text" id="splash-email" class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-brand-500 focus:bg-white focus:border-brand-500 transition-all" placeholder="Enter your Email or User ID (e.g. owner@mystore.com or @alex)" value="" autocomplete="off" required>
-              <i class="fa-solid fa-id-badge absolute left-4 top-3.5 text-slate-400 text-base"></i>
+          <div id="signin-credentials-step" class="space-y-3.5">
+            <div>
+              <label for="splash-email" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Address or User ID *</label>
+              <div class="relative">
+                <input type="text" id="splash-email" class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-brand-500 focus:bg-white focus:border-brand-500 transition-all" placeholder="Enter your Email or User ID (e.g. owner@mystore.com or @alex)" value="" autocomplete="off" required>
+                <i class="fa-solid fa-id-badge absolute left-4 top-3.5 text-slate-400 text-base"></i>
+              </div>
+              <p id="splash-email-error" class="text-[11px] font-bold text-rose-600 mt-1.5 hidden flex items-center gap-1">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span id="splash-email-error-text">Invalid email! Please enter a valid email address.</span>
+              </p>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="splash-password" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Password *</label>
+                <button type="button" id="btn-splash-forgot-password" class="text-xs font-bold text-purple-600 hover:text-purple-700 transition-colors">Forgot Password? (Owner)</button>
+              </div>
+              <div class="relative">
+                <input type="password" id="splash-password" class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-brand-500 focus:bg-white focus:border-brand-500 transition-all" placeholder="Enter your secret password" value="" autocomplete="new-password" required>
+                <i class="fa-solid fa-lock absolute left-4 top-3.5 text-slate-400 text-base"></i>
+              </div>
+            </div>
+
+            <!-- Sign-In Anti-Bot Captcha -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="signin-captcha-input" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Captcha Verification *</label>
+                <span class="text-[10px] font-semibold text-slate-500">Case-insensitive</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <canvas id="signin-captcha-canvas" width="150" height="42" class="rounded-xl border border-slate-300 bg-white shadow-xs cursor-pointer" title="Click to refresh captcha"></canvas>
+                <button type="button" id="btn-refresh-signin-captcha" class="p-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 hover:text-purple-600 transition-colors shadow-xs" title="Generate new captcha code">
+                  <i class="fa-solid fa-arrows-rotate text-sm"></i>
+                </button>
+                <input type="text" id="signin-captcha-input" maxlength="6" class="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-mono font-bold uppercase tracking-wider focus:ring-2 focus:ring-brand-500 focus:bg-white" placeholder="Enter Captcha" required>
+              </div>
+            </div>
+
+            <button id="btn-splash-signin" type="button" class="w-full py-3.5 sm:py-4 px-6 rounded-2xl font-bold text-white btn-modern-primary text-sm sm:text-base tracking-wide flex items-center justify-center gap-2 shadow-lg">
+              <span>Sign In & Verify Email OTP</span>
+              <i class="fa-solid fa-arrow-right text-sm"></i>
+            </button>
+
+            <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/70 text-center">
+              <p class="text-xs text-slate-500">
+                <strong class="text-slate-700">Strict Role Separation:</strong> Workers access POS Billing; Store Owners manage Executive Analytics, Bill Formats & Staff.
+              </p>
             </div>
           </div>
 
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label for="splash-password" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Password *</label>
-              <button type="button" id="btn-splash-forgot-password" class="text-xs font-bold text-purple-600 hover:text-purple-700 transition-colors">Forgot Password? (Owner)</button>
-            </div>
-            <div class="relative">
-              <input type="password" id="splash-password" class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-brand-500 focus:bg-white focus:border-brand-500 transition-all" placeholder="Enter your secret password" value="" autocomplete="new-password" required>
-              <i class="fa-solid fa-lock absolute left-4 top-3.5 text-slate-400 text-base"></i>
-            </div>
-          </div>
-
-          <!-- Sign-In Anti-Bot Captcha -->
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label for="signin-captcha-input" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Captcha Verification *</label>
-              <span class="text-[10px] font-semibold text-slate-500">Case-insensitive</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <canvas id="signin-captcha-canvas" width="150" height="42" class="rounded-xl border border-slate-300 bg-white shadow-xs cursor-pointer" title="Click to refresh captcha"></canvas>
-              <button type="button" id="btn-refresh-signin-captcha" class="p-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 hover:text-purple-600 transition-colors shadow-xs" title="Generate new captcha code">
-                <i class="fa-solid fa-arrows-rotate text-sm"></i>
+          <!-- STEP 2 OF SIGN-IN: EMAIL OTP VERIFICATION AFTER PASSWORD -->
+          <div id="signin-otp-step" class="space-y-4 hidden">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-purple-600"></i>
+                <span class="text-xs font-extrabold uppercase tracking-wider text-slate-800">Verify Email OTP</span>
+              </div>
+              <button type="button" id="btn-signin-otp-back" class="text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-slate-100">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Back</span>
               </button>
-              <input type="text" id="signin-captcha-input" maxlength="6" class="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-mono font-bold uppercase tracking-wider focus:ring-2 focus:ring-brand-500 focus:bg-white" placeholder="Enter Captcha" required>
             </div>
-          </div>
 
-          <button id="btn-splash-signin" type="button" class="w-full py-3.5 sm:py-4 px-6 rounded-2xl font-bold text-white btn-modern-primary text-sm sm:text-base tracking-wide flex items-center justify-center gap-2 shadow-lg">
-            <span>Sign In to POS Console</span>
-            <i class="fa-solid fa-arrow-right text-sm"></i>
-          </button>
+            <div class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 space-y-1.5">
+              <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider">
+                <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                <span>Password Verified • OTP Sent!</span>
+              </div>
+              <p class="text-xs text-emerald-700">
+                Enter the 6-digit OTP sent to <strong id="signin-otp-email-display" class="font-mono text-emerald-950"></strong>
+              </p>
+              <div class="p-2 bg-white/90 rounded-xl border border-emerald-300 flex items-center justify-between mt-1">
+                <span class="text-[11px] font-semibold text-slate-600">Simulated Email OTP:</span>
+                <span id="signin-simulated-otp-code" class="font-mono font-black text-base text-purple-700 tracking-widest bg-purple-50 px-2.5 py-0.5 rounded-lg border border-purple-200"></span>
+              </div>
+            </div>
 
-          <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/70 text-center">
-            <p class="text-xs text-slate-500">
-              <strong class="text-slate-700">Strict Role Separation:</strong> Workers access POS Billing; Store Owners manage Executive Analytics, Bill Formats & Staff.
-            </p>
+            <div>
+              <label for="signin-otp-input" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 text-center">Enter 6-Digit OTP *</label>
+              <input type="text" id="signin-otp-input" maxlength="6" class="w-full py-2.5 px-4 bg-white border-2 border-purple-300 rounded-xl font-mono text-center text-xl font-black tracking-[0.35em] text-slate-800 focus:ring-2 focus:ring-purple-500" placeholder="••••••">
+              <p id="signin-otp-error" class="text-[11px] font-bold text-rose-600 mt-1 text-center hidden"></p>
+            </div>
+
+            <div class="flex items-center justify-between text-xs text-slate-500 px-1">
+              <span>Expires in: <strong id="signin-otp-countdown" class="text-slate-700 font-mono">05:00</strong></span>
+              <button type="button" id="btn-signin-resend-otp" class="font-bold text-purple-600 hover:text-purple-700 disabled:text-slate-400 disabled:cursor-not-allowed" disabled>Resend OTP</button>
+            </div>
+
+            <button id="btn-signin-verify-otp" type="button" class="w-full py-3.5 px-6 rounded-2xl font-bold text-white btn-modern-primary text-sm flex items-center justify-center gap-2 shadow-lg">
+              <i class="fa-solid fa-circle-check"></i>
+              <span>Verify OTP & Sign In</span>
+            </button>
           </div>
         </form>
       </div>
@@ -234,6 +284,10 @@
                 <div>
                   <label for="reg-owner-email" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Owner Login Email *</label>
                   <input type="email" id="reg-owner-email" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-brand-500" placeholder="e.g. owner@mystore.com" required>
+                  <p id="reg-owner-email-error" class="text-[11px] font-bold text-rose-600 mt-1 hidden flex items-center gap-1">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span id="reg-owner-email-error-text">Invalid email! Please enter a valid email address.</span>
+                  </p>
                 </div>
                 <div>
                   <label for="reg-owner-password" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Owner Password *</label>
@@ -2241,7 +2295,7 @@
   </div>
 
   <!-- ======================================================== -->
-  <!-- MODAL: GOOGLE ONE-CLICK SIGN IN / SIGN UP                -->
+  <!-- MODAL: GOOGLE ACCOUNT SIGN IN / SIGN UP (3-STEP OTP)     -->
   <!-- ======================================================== -->
   <div id="google-auth-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-950/75 backdrop-blur-sm transition-opacity flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-200">
@@ -2259,26 +2313,114 @@
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
-      <p class="text-xs text-slate-500">Choose an account to continue to <strong>BillBuddy</strong></p>
-      <div class="space-y-2">
-        <button type="button" class="google-account-choice w-full p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-3 text-left" data-name="Demo Store Owner" data-email="owner.demo@gmail.com">
-          <div class="w-8 h-8 rounded-full bg-purple-600 text-white font-bold text-xs flex items-center justify-center">O</div>
-          <div class="flex-1 truncate">
-            <div class="text-xs font-bold text-slate-800">Demo Store Owner</div>
-            <div class="text-[11px] text-slate-500 truncate">owner.demo@gmail.com</div>
-          </div>
+
+      <!-- GOOGLE STEP 1: ENTER YOUR OWN GOOGLE EMAIL -->
+      <div id="google-step-email" class="space-y-3">
+        <p class="text-xs text-slate-600">Use your own Google Account to continue to <strong>BillBuddy</strong></p>
+
+        <div>
+          <label for="google-input-email" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Google Email Address *</label>
+          <input type="email" id="google-input-email" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:bg-white" placeholder="Enter your Google email (e.g. name@gmail.com)" autocomplete="email">
+          <p id="google-email-error" class="text-[11px] font-bold text-rose-600 mt-1 hidden flex items-center gap-1">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span id="google-email-error-text">Invalid email! Please enter a valid Google email address.</span>
+          </p>
+        </div>
+
+        <div>
+          <label for="google-input-name" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Your Name / Owner Name (Optional)</label>
+          <input type="text" id="google-input-name" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:bg-white" placeholder="e.g. Shanmukha Reddy">
+        </div>
+
+        <button id="btn-google-email-next" type="button" class="w-full py-2.5 px-4 rounded-xl font-bold text-white btn-modern-primary text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md">
+          <span>Next — Enter Password</span>
+          <i class="fa-solid fa-arrow-right text-xs"></i>
         </button>
-        <button type="button" class="google-account-choice w-full p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-3 text-left" data-name="Alex Supermart" data-email="alex.supermart@gmail.com">
-          <div class="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center">A</div>
-          <div class="flex-1 truncate">
-            <div class="text-xs font-bold text-slate-800">Alex Supermart</div>
-            <div class="text-[11px] text-slate-500 truncate">alex.supermart@gmail.com</div>
-          </div>
-        </button>
+
+        <div class="relative flex items-center justify-center py-1">
+          <div class="border-t border-slate-200 w-full"></div>
+          <span class="bg-white px-2.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider absolute">or quick pick account</span>
+        </div>
+
+        <div class="space-y-1.5">
+          <button type="button" class="google-account-choice w-full p-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-3 text-left" data-name="Demo Store Owner" data-email="owner.demo@gmail.com">
+            <div class="w-7 h-7 rounded-full bg-purple-600 text-white font-bold text-xs flex items-center justify-center">O</div>
+            <div class="flex-1 truncate">
+              <div class="text-xs font-bold text-slate-800">Demo Store Owner</div>
+              <div class="text-[11px] text-slate-500 truncate">owner.demo@gmail.com</div>
+            </div>
+          </button>
+          <button type="button" class="google-account-choice w-full p-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-3 text-left" data-name="Alex Supermart" data-email="alex.supermart@gmail.com">
+            <div class="w-7 h-7 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center">A</div>
+            <div class="flex-1 truncate">
+              <div class="text-xs font-bold text-slate-800">Alex Supermart</div>
+              <div class="text-[11px] text-slate-500 truncate">alex.supermart@gmail.com</div>
+            </div>
+          </button>
+        </div>
       </div>
+
+      <!-- GOOGLE STEP 2: ENTER PASSWORD -->
+      <div id="google-step-password" class="space-y-3 hidden">
+        <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <i class="fa-solid fa-user-circle text-indigo-600 text-base"></i>
+            <span id="google-selected-email-display" class="text-xs font-mono font-bold text-slate-800 truncate"></span>
+          </div>
+          <button type="button" id="btn-google-change-email" class="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 shrink-0">Change</button>
+        </div>
+
+        <div>
+          <label for="google-input-password" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Google Account Password *</label>
+          <input type="password" id="google-input-password" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:bg-white" placeholder="Enter your Google account password" autocomplete="current-password">
+          <p id="google-password-error" class="text-[11px] font-bold text-rose-600 mt-1 hidden"></p>
+        </div>
+
+        <div class="flex gap-2 pt-1">
+          <button id="btn-google-password-back" type="button" class="py-2.5 px-4 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50">Back</button>
+          <button id="btn-google-password-next" type="button" class="flex-1 py-2.5 px-4 rounded-xl font-bold text-white btn-modern-primary text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md">
+            <span>Next — Send OTP</span>
+            <i class="fa-solid fa-paper-plane text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- GOOGLE STEP 3: EMAIL OTP VERIFICATION -->
+      <div id="google-step-otp" class="space-y-3 hidden">
+        <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 space-y-1">
+          <div class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
+            <i class="fa-solid fa-circle-check text-emerald-600"></i>
+            <span>Verification OTP sent to <strong id="google-otp-email-display" class="font-mono text-emerald-950"></strong></span>
+          </div>
+          <div class="flex items-center justify-between bg-white/90 p-2 rounded-lg border border-emerald-300">
+            <span class="text-[11px] font-semibold text-slate-600">Simulated Email OTP:</span>
+            <span id="google-simulated-otp-code" class="font-mono font-black text-base text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200"></span>
+          </div>
+        </div>
+
+        <div>
+          <label for="google-input-otp" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 text-center">Enter 6-Digit Email OTP *</label>
+          <input type="text" id="google-input-otp" maxlength="6" class="w-full py-2.5 px-4 bg-white border-2 border-purple-300 rounded-xl font-mono text-center text-xl font-black tracking-[0.3em] text-slate-800 focus:ring-2 focus:ring-purple-500" placeholder="••••••">
+          <p id="google-otp-error" class="text-[11px] font-bold text-rose-600 mt-1 text-center hidden"></p>
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-slate-500 px-1">
+          <span>Expires: <strong id="google-otp-countdown" class="text-slate-700 font-mono">05:00</strong></span>
+          <button type="button" id="btn-google-resend-otp" class="font-bold text-purple-600 hover:text-purple-700 disabled:text-slate-400 disabled:cursor-not-allowed" disabled>Resend OTP</button>
+        </div>
+
+        <div class="flex gap-2 pt-1">
+          <button id="btn-google-otp-back" type="button" class="py-2.5 px-4 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50">Back</button>
+          <button id="btn-google-verify-otp" type="button" class="flex-1 py-2.5 px-4 rounded-xl font-bold text-white btn-modern-primary text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md">
+            <i class="fa-solid fa-shield-halved text-xs"></i>
+            <span>Verify OTP & Continue</span>
+          </button>
+        </div>
+      </div>
+
       <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-        <span>Simulated Google OAuth 2.0</span>
-        <span>Instant Access</span>
+        <span>Email + Password + OTP Verified</span>
+        <span>Secure Access</span>
       </div>
     </div>
   </div>
