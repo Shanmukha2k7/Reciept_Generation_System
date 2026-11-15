@@ -244,6 +244,8 @@
     signinCaptchaInput: document.getElementById('signin-captcha-input'),
     btnGoogleSignin: document.getElementById('btn-google-signin'),
     btnGoogleSignup: document.getElementById('btn-google-signup'),
+    demoSigninFillBtns: document.querySelectorAll('.demo-signin-fill-btn'),
+    demoRegisterFillBtns: document.querySelectorAll('.demo-register-fill-btn'),
     googleAuthModal: document.getElementById('google-auth-modal'),
     btnCloseGoogleModal: document.getElementById('btn-close-google-modal'),
     googleAccountChoices: document.querySelectorAll('.google-account-choice'),
@@ -1122,10 +1124,85 @@
       storeNotes: '',
       otp: '',
       otpExpiresAt: 0,
-      otpVerified: false
+      otpVerified: false,
+      isDemoAutoFilled: false
     },
     countdownTimer: null,
     resendTimer: null,
+
+    fillDemoPreset(preset) {
+      const users = AuthService.getUsers();
+      let baseId = (preset.id || 'ROYAL_MART').trim().replace(/^@+/, '').toUpperCase();
+      let finalId = baseId;
+      let idSuffix = 2;
+      while (users.some(u => u.workerId && u.workerId.toUpperCase() === finalId)) {
+        finalId = `${baseId}_${idSuffix}`;
+        idSuffix++;
+      }
+
+      let baseEmail = (preset.email || 'ramesh.royalmart@gmail.com').trim().toLowerCase();
+      let finalEmail = baseEmail;
+      let emailSuffix = 2;
+      const emailParts = baseEmail.split('@');
+      while (users.some(u => u.email && u.email.toLowerCase() === finalEmail)) {
+        finalEmail = `${emailParts[0]}${emailSuffix}@${emailParts[1] || 'gmail.com'}`;
+        emailSuffix++;
+      }
+
+      const name = preset.name || 'Ramesh Reddy';
+      const password = preset.password || 'Owner@123';
+      const storeName = preset.store || `${name}'s Supermarket`;
+      const storeTax = preset.tax || '36AABCU9603R1ZM';
+      const storeAddress = preset.address || 'Shop 14, Main Ring Road, Guntur, AP';
+      const storePhone = preset.phone || '+91 98765 43210';
+      const storeUpi = preset.upi || `${finalId.toLowerCase().replace(/[^a-z0-9]/g, '')}@okaxis`;
+      const storeMerchant = preset.merchant || storeName;
+      const storeNotes = preset.notes || `Thank you for shopping at ${storeName}! Visit again.`;
+
+      // Fill Step 1 DOM inputs
+      if (DOM.regOwnerName) DOM.regOwnerName.value = name;
+      if (DOM.regOwnerId) {
+        DOM.regOwnerId.value = finalId;
+        OwnerIdService.checkAvailability(finalId);
+      }
+      if (DOM.regOwnerEmail) DOM.regOwnerEmail.value = finalEmail;
+      if (DOM.regOwnerEmailError) DOM.regOwnerEmailError.classList.add('hidden');
+      if (DOM.regOwnerPassword) DOM.regOwnerPassword.value = password;
+
+      // Fill Step 2 DOM inputs
+      if (DOM.regStoreName) DOM.regStoreName.value = storeName;
+      if (DOM.regStoreTax) DOM.regStoreTax.value = storeTax;
+      if (DOM.regStoreAddress) DOM.regStoreAddress.value = storeAddress;
+      if (DOM.regStorePhone) DOM.regStorePhone.value = storePhone;
+
+      // Fill Step 3 DOM inputs
+      if (DOM.regStoreUpi) DOM.regStoreUpi.value = storeUpi;
+      if (DOM.regStoreMerchant) DOM.regStoreMerchant.value = storeMerchant;
+      if (DOM.regStoreNotes) DOM.regStoreNotes.value = storeNotes;
+
+      // Sync Wizard State across all steps
+      this.state.ownerName = name;
+      this.state.ownerId = finalId;
+      this.state.email = finalEmail;
+      this.state.password = password;
+      this.state.storeName = storeName;
+      this.state.storeTax = storeTax;
+      this.state.storeAddress = storeAddress;
+      this.state.storePhone = storePhone;
+      this.state.storeUpi = storeUpi;
+      this.state.storeMerchant = storeMerchant;
+      this.state.storeNotes = storeNotes;
+      this.state.isDemoAutoFilled = true;
+
+      // Pre-fill Step 4 Captcha & OTP so all 4 steps are ready by default
+      CaptchaService.refreshRegister();
+      if (DOM.registerCaptchaInput) {
+        DOM.registerCaptchaInput.value = CaptchaService.registerCaptchaCode || '';
+      }
+      this.sendOtp(true);
+
+      Toast.show(`All 4 steps default-filled for "${storeName}" (${finalEmail})! Click Next through each step.`, 'info');
+    },
 
     goToStep(step) {
       if (step < 1 || step > 4) return;
@@ -1153,6 +1230,12 @@
 
       if (step === 4) {
         CaptchaService.refreshRegister();
+        if (this.state.isDemoAutoFilled) {
+          if (DOM.registerCaptchaInput) {
+            DOM.registerCaptchaInput.value = CaptchaService.registerCaptchaCode || '';
+          }
+          this.sendOtp(true);
+        }
       }
     },
 
@@ -1240,7 +1323,7 @@
       return true;
     },
 
-    sendOtp() {
+    sendOtp(silentAutoFill = false) {
       const captchaInput = (DOM.registerCaptchaInput.value || '').trim();
       if (!captchaInput) {
         Toast.show('Please enter the captcha verification code first', 'warning');
@@ -1262,13 +1345,15 @@
       if (DOM.registerSimulatedOtpCode) DOM.registerSimulatedOtpCode.textContent = otp;
       if (DOM.registerOtpSimAlert) DOM.registerOtpSimAlert.classList.remove('hidden');
       if (DOM.registerOtpInput) {
-        DOM.registerOtpInput.value = '';
-        DOM.registerOtpInput.focus();
+        DOM.registerOtpInput.value = (silentAutoFill || this.state.isDemoAutoFilled) ? otp : '';
+        if (!silentAutoFill) DOM.registerOtpInput.focus();
       }
 
       this.startTimers();
-      Toast.show(`Security OTP dispatched to ${this.state.email}! (Demo: ${otp})`, 'success');
-      if (window.confetti) confetti({ particleCount: 30, spread: 50, origin: { y: 0.6 } });
+      if (!silentAutoFill) {
+        Toast.show(`Security OTP dispatched to ${this.state.email}! (Demo: ${otp})`, 'success');
+        if (window.confetti) confetti({ particleCount: 30, spread: 50, origin: { y: 0.6 } });
+      }
       return true;
     },
 
@@ -1472,9 +1557,11 @@
     countdownTimer: null,
     resendTimer: null,
     resendCooldown: 0,
+    isQuickPick: false,
 
     openModal(mode = 'signin') {
       this.mode = mode;
+      this.isQuickPick = false;
       this.pendingEmail = '';
       this.pendingName = '';
       this.pendingPassword = '';
@@ -1582,7 +1669,7 @@
 
       if (DOM.googleOtpEmailDisplay) DOM.googleOtpEmailDisplay.textContent = this.pendingEmail;
       if (DOM.googleSimulatedOtpCode) DOM.googleSimulatedOtpCode.textContent = this.otp;
-      if (DOM.googleInputOtp) DOM.googleInputOtp.value = '';
+      if (DOM.googleInputOtp) DOM.googleInputOtp.value = this.isQuickPick ? this.otp : '';
       showInlineError(DOM.googleOtpError, null, '');
 
       this.goToStep(3);
@@ -1680,18 +1767,21 @@
       this.closeModal();
 
       if (this.mode === 'signup') {
-        if (DOM.regOwnerName) DOM.regOwnerName.value = this.pendingName;
-        if (DOM.regOwnerEmail) DOM.regOwnerEmail.value = this.pendingEmail;
-        showInlineError(DOM.regOwnerEmailError, DOM.regOwnerEmailErrorText, '');
         const cleanId = this.pendingEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_').toUpperCase();
-        if (DOM.regOwnerId) {
-          DOM.regOwnerId.value = cleanId;
-          OwnerIdService.checkAvailability(cleanId);
-        }
-        if (DOM.regOwnerPassword) {
-          DOM.regOwnerPassword.value = this.pendingPassword;
-        }
-        Toast.show(`Google account "${this.pendingEmail}" verified via OTP! Complete your store details.`, 'success');
+        OwnerWizardService.fillDemoPreset({
+          name: this.pendingName,
+          id: cleanId,
+          email: this.pendingEmail,
+          password: this.pendingPassword,
+          store: `${this.pendingName}'s Store`,
+          tax: '36AABCU9603R1ZM',
+          address: 'Main Commerce Hub, Tech City',
+          phone: '+91 98765 00000',
+          upi: `${cleanId.toLowerCase().replace(/[^a-z0-9]/g, '')}@okaxis`,
+          merchant: this.pendingName,
+          notes: `Thank you for shopping at ${this.pendingName}'s Store!`
+        });
+        Toast.show(`Google account "${this.pendingEmail}" verified & all store details default-filled!`, 'success');
         return true;
       }
 
@@ -1847,6 +1937,49 @@
       } catch {
         return [];
       }
+    },
+
+    fillDemoSignin(role, email, password, name) {
+      const targetEmail = (email || '').trim().toLowerCase();
+      const targetPassword = password || (role === 'owner' ? 'Admin@123' : 'Worker@123');
+      const users = this.getUsers();
+      let existing = users.find(u => u.email && u.email.toLowerCase() === targetEmail);
+
+      // Ensure demo account exists with the expected password hash
+      if (!existing) {
+        const workerId = role === 'owner' ? 'ADM-001' : (targetEmail.startsWith('priya') ? 'WRK-102' : 'WRK-101');
+        existing = {
+          workerId,
+          adminId: 'ADM-001',
+          name: name || (role === 'owner' ? 'System Administrator' : 'Demo Cashier'),
+          email: targetEmail,
+          role: role === 'owner' ? 'admin' : 'worker',
+          passwordHash: sha256(targetPassword),
+          ...(role === 'owner' ? {
+            store: JSON.parse(JSON.stringify(AppState.store)),
+            qrConfig: JSON.parse(JSON.stringify(AppState.qrConfig))
+          } : {})
+        };
+        users.push(existing);
+        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+      } else if (existing.passwordHash !== sha256(targetPassword)) {
+        existing.passwordHash = sha256(targetPassword);
+        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+      }
+
+      if (DOM.splashEmail) DOM.splashEmail.value = targetEmail;
+      if (DOM.splashPassword) DOM.splashPassword.value = targetPassword;
+      showInlineError(DOM.splashEmailError, DOM.splashEmailErrorText, '');
+
+      if (!CaptchaService.signinCaptchaCode) {
+        CaptchaService.refreshSignin();
+      }
+      if (DOM.signinCaptchaInput) {
+        DOM.signinCaptchaInput.value = CaptchaService.signinCaptchaCode || '';
+      }
+
+      const roleLabel = role === 'owner' ? 'Store Owner' : 'POS Worker';
+      Toast.show(`Demo ${roleLabel} (${targetEmail}) default-filled with password & captcha! Click Sign In.`, 'info');
     },
 
     login(identifierInput, passwordInput) {
@@ -4503,7 +4636,38 @@
       });
     }
 
-    // Sign-In Email Listeners
+    // Sign-In Email Listeners & Quick-Fill Demo Buttons
+    if (DOM.demoSigninFillBtns) {
+      DOM.demoSigninFillBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          AuthService.fillDemoSignin(
+            btn.dataset.role || 'worker',
+            btn.dataset.email || '',
+            btn.dataset.password || '',
+            btn.dataset.name || ''
+          );
+        });
+      });
+    }
+    if (DOM.demoRegisterFillBtns) {
+      DOM.demoRegisterFillBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          OwnerWizardService.fillDemoPreset({
+            name: btn.dataset.name,
+            id: btn.dataset.id,
+            email: btn.dataset.email,
+            password: btn.dataset.password,
+            store: btn.dataset.store,
+            tax: btn.dataset.tax,
+            address: btn.dataset.address,
+            phone: btn.dataset.phone,
+            upi: btn.dataset.upi,
+            merchant: btn.dataset.merchant,
+            notes: btn.dataset.notes
+          });
+        });
+      });
+    }
     if (DOM.splashEmail) {
       DOM.splashEmail.addEventListener('input', () => {
         showInlineError(DOM.splashEmailError, DOM.splashEmailErrorText, '');
@@ -4597,10 +4761,15 @@
     if (DOM.googleAccountChoices) {
       DOM.googleAccountChoices.forEach(choice => {
         choice.addEventListener('click', () => {
+          GoogleAuthService.isQuickPick = true;
           if (DOM.googleInputEmail) DOM.googleInputEmail.value = choice.dataset.email || '';
           if (DOM.googleInputName) DOM.googleInputName.value = choice.dataset.name || '';
           showInlineError(DOM.googleEmailError, DOM.googleEmailErrorText, '');
           GoogleAuthService.submitEmailStep();
+          if (DOM.googleInputPassword) {
+            DOM.googleInputPassword.value = 'Google@2026';
+          }
+          Toast.show(`Selected ${choice.dataset.email} — password default-filled!`, 'info');
         });
       });
     }

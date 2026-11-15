@@ -107,6 +107,48 @@
 
         <form id="splash-auth-form" autocomplete="off" onsubmit="return false;" class="space-y-3.5">
           <div id="signin-credentials-step" class="space-y-3.5">
+            <!-- Quick-Fill Demo Sign-In Accounts (Owner & Workers) -->
+            <div class="p-3 bg-indigo-50/70 border border-indigo-200/80 rounded-2xl space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-extrabold uppercase tracking-wider text-indigo-900 flex items-center gap-1.5">
+                  <i class="fa-solid fa-wand-magic-sparkles text-indigo-600"></i>
+                  <span>Quick-Fill Demo Sign In (Click to Fill All)</span>
+                </span>
+                <span class="text-[10px] font-semibold text-indigo-600 bg-white px-2 py-0.5 rounded-full border border-indigo-200">1-Click Fill</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <button type="button" class="demo-signin-fill-btn p-2 rounded-xl bg-white hover:bg-purple-50 border border-purple-200 hover:border-purple-400 transition-all text-left group shadow-2xs" data-role="owner" data-email="admin@billbuddy.com" data-password="Admin@123" data-name="System Owner">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-5 h-5 rounded-lg bg-purple-600 text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                      <i class="fa-solid fa-crown"></i>
+                    </span>
+                    <span class="text-[11px] font-extrabold text-slate-800 group-hover:text-purple-700 truncate">Demo Owner</span>
+                  </div>
+                  <div class="text-[10px] font-mono text-slate-500 truncate mt-0.5">admin@billbuddy.com</div>
+                </button>
+
+                <button type="button" class="demo-signin-fill-btn p-2 rounded-xl bg-white hover:bg-indigo-50 border border-indigo-200 hover:border-indigo-400 transition-all text-left group shadow-2xs" data-role="worker" data-email="rahul@billbuddy.com" data-password="Worker@123" data-name="Rahul Sharma">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-5 h-5 rounded-lg bg-indigo-600 text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                      <i class="fa-solid fa-user-tag"></i>
+                    </span>
+                    <span class="text-[11px] font-extrabold text-slate-800 group-hover:text-indigo-700 truncate">Demo Worker 1</span>
+                  </div>
+                  <div class="text-[10px] font-mono text-slate-500 truncate mt-0.5">rahul@billbuddy.com</div>
+                </button>
+
+                <button type="button" class="demo-signin-fill-btn p-2 rounded-xl bg-white hover:bg-emerald-50 border border-emerald-200 hover:border-emerald-400 transition-all text-left group shadow-2xs" data-role="worker" data-email="priya@billbuddy.com" data-password="Worker@123" data-name="Priya Patel">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-5 h-5 rounded-lg bg-emerald-600 text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                      <i class="fa-solid fa-cash-register"></i>
+                    </span>
+                    <span class="text-[11px] font-extrabold text-slate-800 group-hover:text-emerald-700 truncate">Demo Worker 2</span>
+                  </div>
+                  <div class="text-[10px] font-mono text-slate-500 truncate mt-0.5">priya@billbuddy.com</div>
+                </button>
+              </div>
+            </div>
+
             <div>
               <label for="splash-email" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Address or User ID *</label>
               <div class="relative">
@@ -191,7 +233,56 @@
         </div>
 
         <form id="splash-register-form" autocomplete="off" onsubmit="return false;" class="space-y-4">
-          
+          <!-- Quick-Fill Demo Create Account Mails (Auto-Fills All 4 Wizard Steps) -->
+          <div class="p-3 bg-purple-50/80 border border-purple-200 rounded-2xl space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-extrabold uppercase tracking-wider text-purple-900 flex items-center gap-1.5">
+                <i class="fa-solid fa-bolt text-purple-600"></i>
+                <span>Demo Create Account Mails (Click to Default-Fill All Options)</span>
+              </span>
+              <span class="text-[10px] font-semibold text-purple-700 bg-white px-2 py-0.5 rounded-full border border-purple-200">Fills All 4 Steps</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button type="button" class="demo-register-fill-btn p-2.5 rounded-xl bg-white hover:bg-purple-50 border border-purple-200 hover:border-purple-400 transition-all text-left group shadow-2xs"
+                data-name="Ramesh Reddy"
+                data-id="ROYAL_MART"
+                data-email="ramesh.royalmart@gmail.com"
+                data-password="Owner@123"
+                data-store="Royal Mart Supermarket"
+                data-tax="36AABCU9603R1ZM"
+                data-address="Shop 14, Main Ring Road, Guntur, AP"
+                data-phone="+91 98765 43210"
+                data-upi="royalmart@okaxis"
+                data-merchant="Royal Mart Enterprises"
+                data-notes="Thank you for shopping at Royal Mart! Visit again.">
+                <div class="flex items-center justify-between gap-1">
+                  <span class="text-xs font-extrabold text-slate-800 group-hover:text-purple-700 truncate">Royal Mart (Ramesh)</span>
+                  <span class="text-[10px] font-bold text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200">@ROYAL_MART</span>
+                </div>
+                <div class="text-[11px] font-mono text-slate-500 truncate mt-0.5">ramesh.royalmart@gmail.com</div>
+              </button>
+
+              <button type="button" class="demo-register-fill-btn p-2.5 rounded-xl bg-white hover:bg-indigo-50 border border-indigo-200 hover:border-indigo-400 transition-all text-left group shadow-2xs"
+                data-name="Ananya Rao"
+                data-id="FRESH_BASKET"
+                data-email="ananya.freshbasket@gmail.com"
+                data-password="Owner@123"
+                data-store="Fresh Basket Hypermarket"
+                data-tax="29AAACF1234F1Z5"
+                data-address="Plot 42, Jubilee Hills Road, Hyderabad"
+                data-phone="+91 91234 56789"
+                data-upi="freshbasket@icici"
+                data-merchant="Fresh Basket Retail Pvt Ltd"
+                data-notes="Fresh quality every day! Thank you for visiting.">
+                <div class="flex items-center justify-between gap-1">
+                  <span class="text-xs font-extrabold text-slate-800 group-hover:text-indigo-700 truncate">Fresh Basket (Ananya)</span>
+                  <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">@FRESH_BASKET</span>
+                </div>
+                <div class="text-[11px] font-mono text-slate-500 truncate mt-0.5">ananya.freshbasket@gmail.com</div>
+              </button>
+            </div>
+          </div>
+
           <!-- STEP 1: OWNER CREDENTIALS & CUSTOM USER ID -->
           <div id="wizard-step-1" class="space-y-3">
             <button type="button" id="btn-google-signup" class="w-full py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-300 rounded-2xl text-xs sm:text-sm font-bold text-slate-700 flex items-center justify-center gap-2.5 shadow-xs transition-all hover:border-slate-400">
